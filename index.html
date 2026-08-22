@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PromptGenz - AI Image Prompts</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Hide scrollbars for clean mobile-app like UI */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="bg-zinc-950 text-white font-sans pb-24">
+
+    <!-- Header Section -->
+    <header class="flex items-center justify-between px-4 py-3 sticky top-0 bg-zinc-950/85 backdrop-blur-md z-50 border-b border-zinc-900">
+        <h1 class="text-xl font-bold tracking-wide text-amber-400">PromptGenz</h1>
+        <div class="flex items-center space-x-2.5">
+            <!-- Upload Admin Button -->
+            <a href="admin.html" class="bg-zinc-900 border border-zinc-800 px-3 py-1.5 rounded-xl text-xs font-medium text-amber-400 hover:bg-zinc-800 transition flex items-center space-x-1.5">
+                <i class="fa-solid fa-plus text-[10px]"></i>
+                <span>Upload</span>
+            </a>
+            <div class="w-9 h-9 bg-zinc-800 rounded-full flex items-center justify-center overflow-hidden border border-zinc-700">
+                <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100" alt="Profile" class="w-full h-full object-cover">
+            </div>
+        </div>
+    </header>
+
+    <!-- Search Bar -->
+    <div class="px-4 my-3">
+        <div class="flex items-center bg-zinc-900 border border-zinc-800 rounded-full px-4 py-3 text-zinc-400 shadow-inner">
+            <i class="fa-solid fa-magnifying-glass mr-3 text-sm text-zinc-500"></i>
+            <input type="text" placeholder="Search prompts, tags, themes..." class="bg-transparent border-none outline-none text-white w-full text-sm placeholder-zinc-500">
+        </div>
+    </div>
+
+    <!-- Scrollable Featured Banner Slider -->
+    <div class="px-4 my-4">
+        <div id="featuredSlider" class="flex overflow-x-auto space-x-4 no-scrollbar snap-x snap-mandatory scroll-smooth">
+            
+            <!-- Slide 1 -->
+            <div class="relative flex-shrink-0 w-full h-96 rounded-2xl overflow-hidden bg-zinc-900 border border-zinc-800 flex flex-col justify-end p-5 snap-center">
+                <div class="absolute top-4 left-4 bg-black/40 backdrop-blur-md px-3 py-1 rounded-full text-xs font-medium border border-white/10 flex items-center space-x-1 z-10">
+                    <i class="fa-solid fa-star text-amber-400 text-[10px]"></i>
+                    <span>FEATURED</span>
+                </div>
+                <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=600" alt="Featured 1" class="absolute inset-0 w-full h-full object-cover opacity-75">
+                <div class="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/20 to-transparent"></div>
+                <div class="relative z-10 flex justify-between items-end">
+                    <div>
+                        <h2 class="text-2xl font-bold text-white">Cinematic Vibes</h2>
+                        <p class="text-xs text-zinc-300 mt-1">Realistic lighting and dramatic shadows</p>
+                    </div>
+                    <button class="bg-white/20 backdrop-blur-md p-3 rounded-full hover:bg-white/30 transition">
+                        <i class="fa-solid fa-heart text-white"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Slide 2 -->
+            <div class="relative flex-shrink-0 w-full h-96 rounded-2xl overflow-hidden bg-zinc-900 border border-zinc-800 flex flex-col justify-end p-5 snap-center">
+                <div class="absolute top-4 left-4 bg-black/40 backdrop-blur-md px-3 py-1 rounded-full text-xs font-medium border border-white/10 flex items-center space-x-1 z-10">
+                    <i class="fa-solid fa-star text-amber-400 text-[10px]"></i>
+                    <span>LIMITED TIME</span>
+                </div>
+                <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600" alt="Featured 2" class="absolute inset-0 w-full h-full object-cover opacity-75">
+                <div class="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/20 to-transparent"></div>
+                <div class="relative z-10 flex justify-between items-end">
+                    <div>
+                        <h2 class="text-2xl font-bold text-white">City Pop Style</h2>
+                        <p class="text-xs text-zinc-300 mt-1">Vibrant retro aesthetic vibes</p>
+                    </div>
+                    <button class="bg-white/20 backdrop-blur-md p-3 rounded-full hover:bg-white/30 transition">
+                        <i class="fa-solid fa-heart text-white"></i>
+                    </button>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Dots Indicator -->
+        <div class="flex justify-center space-x-1.5 mt-3" id="dotIndicators">
+            <span class="w-4 h-1.5 bg-amber-400 rounded-full transition-all duration-300"></span>
+            <span class="w-1.5 h-1.5 bg-zinc-700 rounded-full transition-all duration-300"></span>
+        </div>
+    </div>
+
+    <!-- Trending Now Section -->
+    <section class="mt-6">
+        <div class="flex justify-between items-center px-4 mb-3">
+            <h3 class="text-lg font-bold">Trending now</h3>
+            <span class="text-xs text-zinc-400 flex items-center cursor-pointer hover:text-white">See all <i class="fa-solid fa-chevron-right text-[10px] ml-1"></i></span>
+        </div>
+        <div class="flex space-x-3 overflow-x-auto px-4 no-scrollbar pb-2">
+            <div class="relative flex-shrink-0 w-28 h-36 rounded-xl overflow-hidden bg-zinc-900 border border-zinc-800">
+                <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300" class="w-full h-full object-cover">
+                <span class="absolute top-2 left-2 bg-black/60 backdrop-blur-sm text-amber-400 text-[10px] font-bold px-1.5 py-0.5 rounded">#1</span>
+            </div>
+            <div class="relative flex-shrink-0 w-28 h-36 rounded-xl overflow-hidden bg-zinc-900 border border-zinc-800">
+                <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=300" class="w-full h-full object-cover">
+                <span class="absolute top-2 left-2 bg-black/60 backdrop-blur-sm text-zinc-300 text-[10px] font-bold px-1.5 py-0.5 rounded">#2</span>
+            </div>
+            <div class="relative flex-shrink-0 w-28 h-36 rounded-xl overflow-hidden bg-zinc-900 border border-zinc-800">
+                <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=300" class="w-full h-full object-cover">
+                <span class="absolute top-2 left-2 bg-black/60 backdrop-blur-sm text-zinc-300 text-[10px] font-bold px-1.5 py-0.5 rounded">#3</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Filter Categories -->
+    <div class="flex space-x-2 overflow-x-auto px-4 my-6 no-scrollbar">
+        <button class="flex items-center space-x-1.5 bg-white text-zinc-950 px-4 py-2 rounded-full text-xs font-semibold flex-shrink-0">
+            <i class="fa-solid fa-sparkles text-xs"></i>
+            <span>All</span>
+        </button>
+        <button class="flex items-center space-x-1.5 bg-zinc-900 border border-zinc-800 text-zinc-300 px-4 py-2 rounded-full text-xs font-medium flex-shrink-0">
+            <i class="fa-solid fa-user text-xs"></i>
+            <span>Portraits</span>
+        </button>
+        <button class="flex items-center space-x-1.5 bg-zinc-900 border border-zinc-800 text-zinc-300 px-4 py-2 rounded-full text-xs font-medium flex-shrink-0">
+            <i class="fa-solid fa-film text-xs"></i>
+            <span>Cinematic</span>
+        </button>
+        <button class="flex items-center space-x-1.5 bg-zinc-900 border border-zinc-800 text-zinc-300 px-4 py-2 rounded-full text-xs font-medium flex-shrink-0">
+            <i class="fa-solid fa-heart text-xs"></i>
+            <span>Couple</span>
+        </button>
+    </div>
+
+    <!-- Gallery Section (Dynamic elements from admin panel will load here) -->
+    <div class="px-4">
+        <h3 class="text-lg font-bold mb-3">Gallery</h3>
+        <div id="galleryGrid" class="grid grid-cols-2 gap-3">
+            <!-- Default Static Sample Card 1 -->
+            <div class="relative rounded-2xl overflow-hidden bg-zinc-900 border border-zinc-800 h-64 group">
+                <img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?w=400" class="w-full h-full object-cover">
+                <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition flex flex-col justify-end p-3">
+                    <span class="text-xs font-bold text-white truncate">Urban Style</span>
+                    <span class="text-[10px] text-amber-400">Portraits</span>
+                </div>
+                <button class="absolute top-3 right-3 bg-black/40 backdrop-blur-md p-2 rounded-full text-white">
+                    <i class="fa-regular fa-heart text-xs"></i>
+                </button>
+            </div>
+            <!-- Default Static Sample Card 2 -->
+            <div class="relative rounded-2xl overflow-hidden bg-zinc-900 border border-zinc-800 h-64 group">
+                <img src="https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=400" class="w-full h-full object-cover">
+                <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition flex flex-col justify-end p-3">
+                    <span class="text-xs font-bold text-white truncate">Classic Look</span>
+                    <span class="text-[10px] text-amber-400">Cinematic</span>
+                </div>
+                <button class="absolute top-3 right-3 bg-black/40 backdrop-blur-md p-2 rounded-full text-white">
+                    <i class="fa-regular fa-heart text-xs"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Navigation Bar -->
+    <nav class="fixed bottom-0 left-0 right-0 bg-zinc-950/90 backdrop-blur-lg border-t border-zinc-900 px-6 py-3 flex justify-between items-center z-50">
+        <a href="#" class="text-amber-400 flex flex-col items-center">
+            <i class="fa-solid fa-house text-lg"></i>
+        </a>
+        <a href="#" class="text-zinc-500 flex flex-col items-center relative">
+            <span class="absolute -top-3 bg-red-600 text-white text-[9px] font-bold px-1.5 rounded-full">NEW</span>
+            <i class="fa-solid fa-compass text-lg"></i>
+        </a>
+        <a href="#" class="text-zinc-500 flex flex-col items-center">
+            <i class="fa-regular fa-heart text-lg"></i>
+        </a>
+        <a href="#" class="text-zinc-500 flex flex-col items-center">
+            <i class="fa-regular fa-user text-lg"></i>
+        </a>
+    </nav>
+
+    <!-- JavaScript for Slider & Loading Admin Prompts -->
+    <script>
+        // 1. Featured Slider Dots Logic
+        const slider = document.getElementById('featuredSlider');
+        const dots = document.getElementById('dotIndicators').children;
+
+        slider.addEventListener('scroll', () => {
+            const index = Math.round(slider.scrollLeft / slider.clientWidth);
+            for (let i = 0; i < dots.length; i++) {
+                if (i === index) {
+                    dots[i].classList.remove('w-1.5', 'bg-zinc-700');
+                    dots[i].classList.add('w-4', 'bg-amber-400');
+                } else {
+                    dots[i].classList.remove('w-4', 'bg-amber-400');
+                    dots[i].classList.add('w-1.5', 'bg-zinc-700');
+                }
+            }
+        });
+
+        // 2. Load Prompts Uploaded from Admin Panel
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedPrompts = JSON.parse(localStorage.getItem('promptgenz_prompts')) || [];
+            
+            if (savedPrompts.length > 0) {
+                const galleryGrid = document.getElementById('galleryGrid');
+                
+                savedPrompts.forEach(item => {
+                    const card = document.createElement('div');
+                    card.className = 'relative rounded-2xl overflow-hidden bg-zinc-900 border border-zinc-800 h-64 group cursor-pointer';
+                    card.innerHTML = `
+                        <img src="${item.imageUrl}" class="w-full h-full object-cover">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition flex flex-col justify-end p-3">
+                            <span class="text-xs font-bold text-white truncate">${item.title}</span>
+                            <span class="text-[10px] text-amber-400">${item.category}</span>
+                        </div>
+                        <button class="absolute top-3 right-3 bg-black/40 backdrop-blur-md p-2 rounded-full text-white">
+                            <i class="fa-regular fa-heart text-xs"></i>
+                        </button>
+                    `;
+                    
+                    // Click par prompt copy karne ka alert ya feature
+                    card.addEventListener('click', () => {
+                        navigator.clipboard.writeText(item.promptText);
+                        alert(`Prompt Copied: "${item.title}"`);
+                    });
+
+                    galleryGrid.prepend(card);
+                });
+            }
+        });
+    </script>
+</body>
+</html>
