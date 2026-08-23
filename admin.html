@@ -1,0 +1,2019 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>PromptGenz - Admin Panel</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+    <style>
+        body {
+            background:
+                radial-gradient(circle at top right, rgba(245,158,11,.08), transparent 35%),
+                #09090b;
+        }
+
+        .glass {
+            background: rgba(24,24,27,.82);
+            backdrop-filter: blur(16px);
+        }
+
+        textarea::-webkit-scrollbar,
+        body::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        textarea::-webkit-scrollbar-thumb,
+        body::-webkit-scrollbar-thumb {
+            background: #3f3f46;
+            border-radius: 10px;
+        }
+
+        .loader {
+            border: 2px solid rgba(255,255,255,.15);
+            border-top-color: #fbbf24;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            animation: spin .7s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body class="text-white min-h-screen">
+
+<div class="max-w-4xl mx-auto px-4 py-6 sm:py-10">
+
+    <!-- HEADER -->
+    <div class="glass border border-zinc-800 rounded-3xl p-5 sm:p-7 shadow-2xl">
+
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+
+            <div>
+                <div class="flex items-center gap-3">
+                    <div class="w-11 h-11 rounded-2xl bg-amber-400 text-zinc-950
+                                flex items-center justify-center shadow-lg">
+                        <i class="fa-solid fa-wand-magic-sparkles text-lg"></i>
+                    </div>
+
+                    <div>
+                        <h1 class="text-xl sm:text-2xl font-black">
+                            PromptGenz Admin
+                        </h1>
+
+                        <p class="text-xs text-zinc-500">
+                            AI Prompt Management Dashboard
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <a href="index.html"
+               class="bg-zinc-800 hover:bg-zinc-700 px-4 py-2.5
+                      rounded-xl text-xs font-semibold transition text-center">
+                <i class="fa-solid fa-arrow-left mr-2"></i>
+                View Site
+            </a>
+
+        </div>
+
+        <div class="h-px bg-zinc-800 my-6"></div>
+
+        <!-- API SETTINGS -->
+        <div class="bg-zinc-950 border border-zinc-800 rounded-2xl p-4 mb-6">
+
+            <div class="flex items-center gap-2 mb-2">
+                <i class="fa-solid fa-key text-amber-400"></i>
+
+                <label class="text-xs font-bold">
+                    Gemini API Key
+                </label>
+            </div>
+
+            <div class="flex flex-col sm:flex-row gap-2">
+
+                <input
+                    id="apiKeyInput"
+                    type="password"
+                    placeholder="Paste Gemini API key..."
+                    class="flex-1 bg-zinc-900 border border-zinc-800
+                           rounded-xl px-3 py-3 text-xs outline-none
+                           focus:border-amber-400"
+                >
+
+                <button
+                    id="saveApiKeyBtn"
+                    class="bg-amber-400 hover:bg-amber-500
+                           text-zinc-950 px-5 py-3 rounded-xl
+                           text-xs font-black transition">
+
+                    Save Key
+
+                </button>
+
+            </div>
+
+            <p id="apiKeyStatus"
+               class="text-[10px] text-zinc-500 mt-2">
+                Gemini is required for automatic prompt generation.
+            </p>
+
+        </div>
+
+        <!-- IMG BB SETTINGS -->
+        <div class="bg-zinc-950 border border-zinc-800 rounded-2xl p-4 mb-6">
+
+            <div class="flex items-center gap-2 mb-2">
+                <i class="fa-solid fa-image text-amber-400"></i>
+
+                <label class="text-xs font-bold">
+                    ImgBB API Key
+                </label>
+            </div>
+
+            <div class="flex flex-col sm:flex-row gap-2">
+
+                <input
+                    id="imgbbKeyInput"
+                    type="password"
+                    placeholder="Paste ImgBB API key..."
+                    class="flex-1 bg-zinc-900 border border-zinc-800
+                           rounded-xl px-3 py-3 text-xs outline-none
+                           focus:border-amber-400"
+                >
+
+                <button
+                    id="saveImgBBKeyBtn"
+                    class="bg-zinc-800 hover:bg-zinc-700
+                           text-white px-5 py-3 rounded-xl
+                           text-xs font-bold transition">
+
+                    Save Key
+
+                </button>
+
+            </div>
+
+            <p id="imgbbStatus"
+               class="text-[10px] text-zinc-500 mt-2">
+                ImgBB is used to host uploaded images.
+            </p>
+
+        </div>
+
+        <!-- FORM -->
+        <form id="uploadForm">
+
+            <!-- IMAGES -->
+            <div class="mb-6">
+
+                <label class="block text-xs font-bold text-zinc-300 mb-2">
+                    <i class="fa-solid fa-images text-amber-400 mr-1"></i>
+                    Upload Multiple Images
+                </label>
+
+                <div id="dropZone"
+                     class="relative border-2 border-dashed
+                            border-zinc-800 hover:border-amber-400/60
+                            bg-zinc-950 rounded-2xl p-8
+                            text-center transition cursor-pointer">
+
+                    <input
+                        type="file"
+                        id="imageFiles"
+                        accept="image/jpeg,image/png,image/webp,image/gif"
+                        multiple
+                        class="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                    >
+
+                    <i class="fa-solid fa-cloud-arrow-up
+                              text-4xl text-amber-400 mb-3"></i>
+
+                    <p class="text-sm font-semibold">
+                        Click or drag images here
+                    </p>
+
+                    <p class="text-[10px] text-zinc-500 mt-1">
+                        Multiple angles are supported
+                    </p>
+
+                </div>
+
+                <div id="fileCount"
+                     class="hidden text-[10px] text-amber-400 mt-2">
+                </div>
+
+            </div>
+
+            <!-- TITLE -->
+            <div class="mb-6">
+
+                <label class="block text-xs font-bold text-zinc-300 mb-2">
+                    Main Post Title
+                </label>
+
+                <div class="bg-zinc-950 border border-zinc-800
+                            rounded-xl flex items-center px-3">
+
+                    <i class="fa-solid fa-heading text-zinc-500 mr-3"></i>
+
+                    <input
+                        id="promptTitle"
+                        required
+                        type="text"
+                        placeholder="e.g. Luxury Fashion Portrait"
+                        class="bg-transparent w-full py-3 text-sm
+                               outline-none"
+                    >
+
+                </div>
+
+            </div>
+
+            <!-- CATEGORY -->
+            <div class="mb-6">
+
+                <label class="block text-xs font-bold text-zinc-300 mb-2">
+                    Category
+                </label>
+
+                <div class="flex gap-2">
+
+                    <select
+                        id="promptCategory"
+                        required
+                        class="flex-1 bg-zinc-950 border border-zinc-800
+                               rounded-xl px-3 py-3 text-sm outline-none
+                               focus:border-amber-400">
+
+                        <option value="">
+                            Loading categories...
+                        </option>
+
+                    </select>
+
+                    <button
+                        type="button"
+                        id="toggleNewCatBtn"
+                        class="bg-zinc-800 hover:bg-zinc-700
+                               text-amber-400 px-4 rounded-xl">
+
+                        <i class="fa-solid fa-plus"></i>
+
+                    </button>
+
+                </div>
+
+                <div id="newCategoryBox"
+                     class="hidden mt-2 flex gap-2">
+
+                    <input
+                        id="newCategoryInput"
+                        type="text"
+                        placeholder="New category..."
+                        class="flex-1 bg-zinc-950 border border-zinc-800
+                               rounded-xl px-3 py-2 text-xs outline-none"
+                    >
+
+                    <button
+                        type="button"
+                        id="saveNewCatBtn"
+                        class="bg-amber-400 text-zinc-950
+                               px-4 rounded-xl text-xs font-bold">
+
+                        Add
+
+                    </button>
+
+                </div>
+
+            </div>
+
+            <!-- PROMPTS -->
+            <div id="perImagePromptsSection"
+                 class="hidden mb-6">
+
+                <div class="flex items-center justify-between mb-3">
+
+                    <label class="text-xs font-bold text-amber-400">
+                        <i class="fa-solid fa-wand-magic-sparkles mr-1"></i>
+                        AI Generated Angle Prompts
+                    </label>
+
+                    <span id="promptCount"
+                          class="text-[10px] text-zinc-500">
+                    </span>
+
+                </div>
+
+                <div id="imagePromptPairsContainer"
+                     class="space-y-4">
+                </div>
+
+            </div>
+
+            <!-- PUBLISH -->
+            <button
+                id="publishBtn"
+                type="submit"
+                class="w-full bg-amber-400 hover:bg-amber-500
+                       text-zinc-950 py-4 rounded-xl
+                       font-black text-sm transition
+                       flex items-center justify-center gap-2">
+
+                <i class="fa-solid fa-cloud-arrow-up"></i>
+
+                <span>
+                    Publish to Cloud
+                </span>
+
+            </button>
+
+        </form>
+
+        <!-- PROGRESS -->
+        <div id="progressBox"
+             class="hidden mt-5">
+
+            <div class="flex justify-between mb-2">
+
+                <span id="progressText"
+                      class="text-xs text-zinc-400">
+                    Preparing...
+                </span>
+
+                <span id="progressPercent"
+                      class="text-xs text-amber-400">
+                    0%
+                </span>
+
+            </div>
+
+            <div class="h-2 bg-zinc-800 rounded-full overflow-hidden">
+
+                <div id="progressBar"
+                     class="h-full bg-amber-400 transition-all"
+                     style="width:0%">
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- ALERT -->
+        <div id="alertBox"
+             class="hidden mt-5 p-4 rounded-xl text-xs">
+        </div>
+
+    </div>
+
+</div>
+
+
+<script type="module">
+
+/* =========================================================
+   FIREBASE
+========================================================= */
+
+import {
+    initializeApp
+} from "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
+
+import {
+    getFirestore,
+    collection,
+    addDoc,
+    getDocs,
+    setDoc,
+    doc,
+    serverTimestamp
+} from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
+
+
+const firebaseConfig = {
+
+    apiKey: "AIzaSyAcyASMFEogpp8BwgJc4hsPGNoIZOb6dKo",
+
+    authDomain:
+        "promptgenz-daaf3.firebaseapp.com",
+
+    projectId:
+        "promptgenz-daaf3",
+
+    storageBucket:
+        "promptgenz-daaf3.firebasestorage.app",
+
+    messagingSenderId:
+        "751005531769",
+
+    appId:
+        "1:751005531769:web:20b8330970e001dd691ea8",
+
+    measurementId:
+        "G-VF4QP1SLSQ"
+};
+
+
+const app = initializeApp(firebaseConfig);
+
+const db = getFirestore(app);
+
+
+/* =========================================================
+   CONFIG
+========================================================= */
+
+const GEMINI_MODEL = "gemini-3.6-flash";
+
+const GEMINI_ENDPOINT =
+    `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
+
+const DEFAULT_CATEGORIES = [
+    "Portraits",
+    "Cinematic",
+    "Couple",
+    "Fashion",
+    "Trending",
+    "Travel",
+    "Lifestyle",
+    "Fantasy"
+];
+
+
+/*
+    IMPORTANT:
+    Replace this with your own ImgBB key.
+*/
+
+const DEFAULT_IMGBB_KEY =
+    "";
+
+
+/* =========================================================
+   STATE
+========================================================= */
+
+let selectedFiles = [];
+
+let imageItems = [];
+
+
+/* =========================================================
+   DOM
+========================================================= */
+
+const imageFiles =
+    document.getElementById("imageFiles");
+
+const container =
+    document.getElementById("imagePromptPairsContainer");
+
+const promptSection =
+    document.getElementById("perImagePromptsSection");
+
+const promptCount =
+    document.getElementById("promptCount");
+
+const fileCount =
+    document.getElementById("fileCount");
+
+const categorySelect =
+    document.getElementById("promptCategory");
+
+const publishBtn =
+    document.getElementById("publishBtn");
+
+const progressBox =
+    document.getElementById("progressBox");
+
+const progressBar =
+    document.getElementById("progressBar");
+
+const progressText =
+    document.getElementById("progressText");
+
+const progressPercent =
+    document.getElementById("progressPercent");
+
+const alertBox =
+    document.getElementById("alertBox");
+
+
+/* =========================================================
+   STORAGE
+========================================================= */
+
+function getGeminiKey() {
+
+    return localStorage.getItem("promptgenz_gemini_key") || "";
+
+}
+
+
+function getImgBBKey() {
+
+    return localStorage.getItem("promptgenz_imgbb_key")
+        || DEFAULT_IMGBB_KEY
+        || "";
+
+}
+
+
+/* =========================================================
+   ALERT
+========================================================= */
+
+function showAlert(message, type = "success") {
+
+    alertBox.classList.remove(
+        "hidden",
+        "bg-emerald-500/10",
+        "border-emerald-500/30",
+        "text-emerald-400",
+        "bg-red-500/10",
+        "border-red-500/30",
+        "text-red-400",
+        "bg-amber-500/10",
+        "border-amber-500/30",
+        "text-amber-400"
+    );
+
+    if (type === "success") {
+
+        alertBox.classList.add(
+            "bg-emerald-500/10",
+            "border",
+            "border-emerald-500/30",
+            "text-emerald-400"
+        );
+
+        alertBox.innerHTML =
+            `<i class="fa-solid fa-circle-check mr-2"></i>${message}`;
+
+    }
+
+    else if (type === "error") {
+
+        alertBox.classList.add(
+            "bg-red-500/10",
+            "border",
+            "border-red-500/30",
+            "text-red-400"
+        );
+
+        alertBox.innerHTML =
+            `<i class="fa-solid fa-circle-exclamation mr-2"></i>${message}`;
+
+    }
+
+    else {
+
+        alertBox.classList.add(
+            "bg-amber-500/10",
+            "border",
+            "border-amber-500/30",
+            "text-amber-400"
+        );
+
+        alertBox.innerHTML =
+            `<i class="fa-solid fa-info-circle mr-2"></i>${message}`;
+
+    }
+
+}
+
+
+/* =========================================================
+   API KEY LOAD
+========================================================= */
+
+function loadSavedKeys() {
+
+    const geminiKey =
+        getGeminiKey();
+
+    const imgbbKey =
+        getImgBBKey();
+
+    const geminiInput =
+        document.getElementById("apiKeyInput");
+
+    const imgbbInput =
+        document.getElementById("imgbbKeyInput");
+
+    if (geminiKey) {
+
+        geminiInput.value = geminiKey;
+
+        document.getElementById("apiKeyStatus").innerHTML =
+            `<span class="text-emerald-400">
+                <i class="fa-solid fa-check-circle mr-1"></i>
+                Gemini API key saved.
+            </span>`;
+
+    }
+
+    if (imgbbKey) {
+
+        imgbbInput.value = imgbbKey;
+
+        document.getElementById("imgbbStatus").innerHTML =
+            `<span class="text-emerald-400">
+                <i class="fa-solid fa-check-circle mr-1"></i>
+                ImgBB API key saved.
+            </span>`;
+
+    }
+
+}
+
+
+document
+.getElementById("saveApiKeyBtn")
+.addEventListener("click", () => {
+
+    const key =
+        document.getElementById("apiKeyInput")
+        .value.trim();
+
+    if (!key) {
+
+        showAlert(
+            "Please enter your Gemini API key.",
+            "error"
+        );
+
+        return;
+    }
+
+    localStorage.setItem(
+        "promptgenz_gemini_key",
+        key
+    );
+
+    document.getElementById("apiKeyStatus").innerHTML =
+        `<span class="text-emerald-400">
+            <i class="fa-solid fa-check-circle mr-1"></i>
+            Gemini API key saved.
+        </span>`;
+
+    showAlert(
+        "Gemini API key saved in this browser.",
+        "success"
+    );
+
+});
+
+
+document
+.getElementById("saveImgBBKeyBtn")
+.addEventListener("click", () => {
+
+    const key =
+        document.getElementById("imgbbKeyInput")
+        .value.trim();
+
+    if (!key) {
+
+        showAlert(
+            "Please enter your ImgBB API key.",
+            "error"
+        );
+
+        return;
+    }
+
+    localStorage.setItem(
+        "promptgenz_imgbb_key",
+        key
+    );
+
+    document.getElementById("imgbbStatus").innerHTML =
+        `<span class="text-emerald-400">
+            <i class="fa-solid fa-check-circle mr-1"></i>
+            ImgBB API key saved.
+        </span>`;
+
+    showAlert(
+        "ImgBB API key saved.",
+        "success"
+    );
+
+});
+
+
+/* =========================================================
+   CATEGORIES
+========================================================= */
+
+async function loadCategories() {
+
+    categorySelect.innerHTML =
+        `<option value="">Loading...</option>`;
+
+    try {
+
+        const snapshot =
+            await getDocs(
+                collection(db, "categories")
+            );
+
+        if (snapshot.empty) {
+
+            for (const category of DEFAULT_CATEGORIES) {
+
+                await setDoc(
+                    doc(db, "categories", category),
+                    {
+                        name: category,
+                        createdAt: serverTimestamp()
+                    }
+                );
+
+            }
+
+            return loadCategories();
+
+        }
+
+        categorySelect.innerHTML =
+            `<option value="">Select category</option>`;
+
+        snapshot.forEach(item => {
+
+            const data =
+                item.data();
+
+            if (!data.name) return;
+
+            const option =
+                document.createElement("option");
+
+            option.value =
+                data.name;
+
+            option.textContent =
+                data.name;
+
+            categorySelect.appendChild(option);
+
+        });
+
+    }
+
+    catch (error) {
+
+        console.error(error);
+
+        categorySelect.innerHTML =
+            `<option value="Portraits">Portraits</option>`;
+
+        showAlert(
+            "Could not load categories. Check Firebase rules.",
+            "error"
+        );
+
+    }
+
+}
+
+
+document
+.getElementById("toggleNewCatBtn")
+.addEventListener("click", () => {
+
+    document
+        .getElementById("newCategoryBox")
+        .classList.toggle("hidden");
+
+});
+
+
+document
+.getElementById("saveNewCatBtn")
+.addEventListener("click", async () => {
+
+    const input =
+        document.getElementById("newCategoryInput");
+
+    const name =
+        input.value.trim();
+
+    if (!name) {
+
+        showAlert(
+            "Enter a category name.",
+            "error"
+        );
+
+        return;
+    }
+
+    try {
+
+        await setDoc(
+            doc(db, "categories", name),
+            {
+                name,
+                createdAt: serverTimestamp()
+            }
+        );
+
+        await loadCategories();
+
+        categorySelect.value =
+            name;
+
+        input.value = "";
+
+        document
+            .getElementById("newCategoryBox")
+            .classList.add("hidden");
+
+        showAlert(
+            `Category "${name}" created.`,
+            "success"
+        );
+
+    }
+
+    catch (error) {
+
+        console.error(error);
+
+        showAlert(
+            "Category creation failed.",
+            "error"
+        );
+
+    }
+
+});
+
+
+/* =========================================================
+   IMAGE COMPRESSION
+========================================================= */
+
+function compressImage(file) {
+
+    return new Promise((resolve, reject) => {
+
+        const reader =
+            new FileReader();
+
+        reader.onload = event => {
+
+            const img =
+                new Image();
+
+            img.onload = () => {
+
+                const MAX_WIDTH = 1200;
+                const MAX_HEIGHT = 1200;
+
+                let width =
+                    img.width;
+
+                let height =
+                    img.height;
+
+                const ratio =
+                    Math.min(
+                        MAX_WIDTH / width,
+                        MAX_HEIGHT / height,
+                        1
+                    );
+
+                width =
+                    Math.round(width * ratio);
+
+                height =
+                    Math.round(height * ratio);
+
+                const canvas =
+                    document.createElement("canvas");
+
+                canvas.width =
+                    width;
+
+                canvas.height =
+                    height;
+
+                const ctx =
+                    canvas.getContext("2d");
+
+                ctx.drawImage(
+                    img,
+                    0,
+                    0,
+                    width,
+                    height
+                );
+
+                resolve(
+                    canvas.toDataURL(
+                        "image/jpeg",
+                        0.85
+                    )
+                );
+
+            };
+
+            img.onerror =
+                () => reject(
+                    new Error("Image could not be loaded.")
+                );
+
+            img.src =
+                event.target.result;
+
+        };
+
+        reader.onerror =
+            () => reject(
+                new Error("File could not be read.")
+            );
+
+        reader.readAsDataURL(file);
+
+    });
+
+}
+
+
+/* =========================================================
+   FILE TO BASE64
+========================================================= */
+
+function fileToBase64(file) {
+
+    return new Promise((resolve, reject) => {
+
+        const reader =
+            new FileReader();
+
+        reader.onload =
+            () => resolve(reader.result);
+
+        reader.onerror =
+            () => reject(
+                new Error("Could not read image.")
+            );
+
+        reader.readAsDataURL(file);
+
+    });
+
+}
+
+
+/* =========================================================
+   GEMINI PROMPT
+========================================================= */
+
+async function generateGeminiPrompt(
+    base64Data,
+    mimeType
+) {
+
+    const apiKey =
+        getGeminiKey();
+
+    if (!apiKey) {
+
+        throw new Error(
+            "Gemini API key is missing."
+        );
+
+    }
+
+    const cleanBase64 =
+        base64Data.split(",")[1];
+
+    const instruction = `
+You are an elite AI image prompt engineer and visual analyst.
+
+Analyze the supplied image extremely carefully.
+
+Create ONE highly detailed professional text-to-image prompt that can recreate the visual frame as accurately as possible.
+
+Describe:
+
+1. Subject appearance and physical characteristics.
+2. Clothing, garment construction, fabric, texture, colors, patterns and accessories.
+3. Exact pose, body position, hand placement and facial expression.
+4. Camera angle, framing, composition and perspective.
+5. Background, architecture, objects and environment.
+6. Lighting direction, intensity, highlights and shadows.
+7. Skin texture and realistic photographic details.
+8. Depth of field, lens characteristics and photographic style.
+9. Color grading and atmosphere.
+10. Important small visual details visible in the reference.
+
+If there is a person, write the prompt so the user can replace the person's identity/face while preserving the pose, clothing, composition and environment.
+
+Use natural language.
+
+Do not mention that you are analyzing an image.
+
+Do not add headings.
+
+Do not add markdown.
+
+Do not add quotation marks.
+
+Return ONLY the final prompt.
+
+Make it long, precise and production-ready.
+`;
+
+    const response =
+        await fetch(
+            `${GEMINI_ENDPOINT}?key=${encodeURIComponent(apiKey)}`,
+            {
+                method: "POST",
+
+                headers: {
+                    "Content-Type":
+                        "application/json"
+                },
+
+                body: JSON.stringify({
+
+                    contents: [
+                        {
+                            role: "user",
+
+                            parts: [
+
+                                {
+                                    text:
+                                        instruction
+                                },
+
+                                {
+                                    inline_data: {
+                                        mime_type:
+                                            mimeType,
+                                        data:
+                                            cleanBase64
+                                    }
+                                }
+
+                            ]
+                        }
+                    ],
+
+                    generationConfig: {
+
+                        temperature: 0.65,
+
+                        maxOutputTokens: 2500
+
+                    }
+
+                })
+
+            }
+        );
+
+    const data =
+        await response.json();
+
+    if (!response.ok) {
+
+        console.error(
+            "Gemini API:",
+            data
+        );
+
+        throw new Error(
+            data?.error?.message ||
+            `Gemini API error ${response.status}`
+        );
+
+    }
+
+    const text =
+        data?.candidates?.[0]?.content?.parts
+            ?.map(part => part.text || "")
+            .join("")
+            .trim();
+
+    if (!text) {
+
+        throw new Error(
+            "Gemini returned an empty prompt."
+        );
+
+    }
+
+    return text;
+
+}
+
+
+/* =========================================================
+   IMGBB UPLOAD
+========================================================= */
+
+async function uploadToImgBB(file) {
+
+    const apiKey =
+        getImgBBKey();
+
+    if (!apiKey) {
+
+        throw new Error(
+            "ImgBB API key is missing."
+        );
+
+    }
+
+    const formData =
+        new FormData();
+
+    formData.append(
+        "key",
+        apiKey
+    );
+
+    formData.append(
+        "image",
+        file
+    );
+
+    const response =
+        await fetch(
+            "https://api.imgbb.com/1/upload",
+            {
+                method: "POST",
+                body: formData
+            }
+        );
+
+    const data =
+        await response.json();
+
+    if (!response.ok || !data.success) {
+
+        throw new Error(
+            data?.error?.message ||
+            "ImgBB upload failed."
+        );
+
+    }
+
+    return {
+
+        url:
+            data.data.url,
+
+        displayUrl:
+            data.data.display_url,
+
+        deleteUrl:
+            data.data.delete_url || "",
+
+        width:
+            data.data.width,
+
+        height:
+            data.data.height,
+
+        size:
+            data.data.size
+
+    };
+
+}
+
+
+/* =========================================================
+   IMAGE UI
+========================================================= */
+
+async function handleFiles(files) {
+
+    const incoming =
+        Array.from(files)
+        .filter(file =>
+            file.type.startsWith("image/")
+        );
+
+    if (!incoming.length) {
+
+        showAlert(
+            "Please select image files.",
+            "error"
+        );
+
+        return;
+
+    }
+
+    selectedFiles =
+        incoming;
+
+    imageItems =
+        [];
+
+    container.innerHTML =
+        "";
+
+    promptSection.classList.remove(
+        "hidden"
+    );
+
+    fileCount.classList.remove(
+        "hidden"
+    );
+
+    fileCount.textContent =
+        `${selectedFiles.length} image(s) selected`;
+
+    promptCount.textContent =
+        `${selectedFiles.length} angle(s)`;
+
+    for (
+        let index = 0;
+        index < selectedFiles.length;
+        index++
+    ) {
+
+        const file =
+            selectedFiles[index];
+
+        const preview =
+            await compressImage(file);
+
+        const item = {
+
+            file,
+
+            preview,
+
+            prompt: "",
+
+            status: "waiting"
+
+        };
+
+        imageItems.push(item);
+
+        renderImageCard(
+            index,
+            item
+        );
+
+    }
+
+    /*
+        Automatically generate prompts.
+        Sequential requests help reduce
+        rate-limit problems.
+    */
+
+    for (
+        let index = 0;
+        index < imageItems.length;
+        index++
+    ) {
+
+        await generatePromptForImage(
+            index
+        );
+
+        if (
+            index <
+            imageItems.length - 1
+        ) {
+
+            await sleep(1000);
+
+        }
+
+    }
+
+}
+
+
+function renderImageCard(
+    index,
+    item
+) {
+
+    const card =
+        document.createElement("div");
+
+    card.id =
+        `image-card-${index}`;
+
+    card.className =
+        "bg-zinc-950 border border-zinc-800 rounded-2xl p-3";
+
+    card.innerHTML = `
+
+        <div class="flex gap-3">
+
+            <img
+                src="${item.preview}"
+                class="w-20 h-20 sm:w-24 sm:h-24
+                       object-cover rounded-xl
+                       border border-zinc-800
+                       flex-shrink-0"
+            >
+
+            <div class="flex-1 min-w-0">
+
+                <div class="flex items-center justify-between mb-2">
+
+                    <div>
+
+                        <span
+                            class="text-[10px] text-amber-400 font-bold">
+                            ANGLE ${index + 1}
+                        </span>
+
+                        <p
+                            class="text-[10px] text-zinc-600
+                                   truncate max-w-[180px]">
+                            ${escapeHtml(item.file.name)}
+                        </p>
+
+                    </div>
+
+                    <span
+                        id="status-${index}"
+                        class="text-[10px] text-zinc-500">
+                        Waiting...
+                    </span>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <textarea
+            id="prompt-${index}"
+            rows="9"
+            placeholder="Gemini-generated prompt will appear here..."
+            class="angle-prompt-input mt-3 w-full
+                   bg-zinc-900 border border-zinc-800
+                   rounded-xl p-3 text-xs leading-relaxed
+                   text-zinc-200 outline-none
+                   focus:border-amber-400 resize-y"
+        ></textarea>
+
+        <div class="flex justify-end mt-2">
+
+            <button
+                type="button"
+                data-index="${index}"
+                class="retry-btn text-[10px]
+                       bg-zinc-800 hover:bg-zinc-700
+                       px-3 py-2 rounded-lg
+                       text-amber-400">
+
+                <i class="fa-solid fa-rotate-right mr-1"></i>
+                Regenerate
+
+            </button>
+
+        </div>
+    `;
+
+    container.appendChild(card);
+
+
+    const textarea =
+        document.getElementById(
+            `prompt-${index}`
+        );
+
+    textarea.addEventListener(
+        "input",
+        () => {
+
+            imageItems[index].prompt =
+                textarea.value;
+
+        }
+    );
+
+}
+
+
+/* =========================================================
+   GENERATE PROMPT
+========================================================= */
+
+async function generatePromptForImage(
+    index
+) {
+
+    const item =
+        imageItems[index];
+
+    const status =
+        document.getElementById(
+            `status-${index}`
+        );
+
+    const textarea =
+        document.getElementById(
+            `prompt-${index}`
+        );
+
+    status.innerHTML =
+        `<span class="text-amber-400">
+            <i class="fa-solid fa-spinner fa-spin mr-1"></i>
+            Analyzing...
+        </span>`;
+
+    try {
+
+        const base64 =
+            await fileToBase64(
+                item.file
+            );
+
+        const prompt =
+            await generateGeminiPrompt(
+                base64,
+                item.file.type
+            );
+
+        item.prompt =
+            prompt;
+
+        textarea.value =
+            prompt;
+
+        status.innerHTML =
+            `<span class="text-emerald-400">
+                <i class="fa-solid fa-check mr-1"></i>
+                Ready
+            </span>`;
+
+    }
+
+    catch (error) {
+
+        console.error(error);
+
+        status.innerHTML =
+            `<span class="text-red-400">
+                <i class="fa-solid fa-xmark mr-1"></i>
+                Failed
+            </span>`;
+
+        textarea.value =
+            "";
+
+        showAlert(
+            `Angle ${index + 1}: ${error.message}`,
+            "error"
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   RETRY BUTTON
+========================================================= */
+
+container.addEventListener(
+    "click",
+    async event => {
+
+        const button =
+            event.target.closest(
+                ".retry-btn"
+            );
+
+        if (!button) return;
+
+        const index =
+            Number(
+                button.dataset.index
+            );
+
+        await generatePromptForImage(
+            index
+        );
+
+    }
+);
+
+
+/* =========================================================
+   FILE INPUT
+========================================================= */
+
+imageFiles.addEventListener(
+    "change",
+    async event => {
+
+        const files =
+            event.target.files;
+
+        if (!files.length) return;
+
+        if (!getGeminiKey()) {
+
+            showAlert(
+                "Save your Gemini API key first.",
+                "error"
+            );
+
+            imageFiles.value =
+                "";
+
+            return;
+
+        }
+
+        await handleFiles(
+            files
+        );
+
+    }
+);
+
+
+/* =========================================================
+   DRAG & DROP
+========================================================= */
+
+const dropZone =
+    document.getElementById(
+        "dropZone"
+    );
+
+
+dropZone.addEventListener(
+    "dragover",
+    event => {
+
+        event.preventDefault();
+
+        dropZone.classList.add(
+            "border-amber-400"
+        );
+
+    }
+);
+
+
+dropZone.addEventListener(
+    "dragleave",
+    () => {
+
+        dropZone.classList.remove(
+            "border-amber-400"
+        );
+
+    }
+);
+
+
+dropZone.addEventListener(
+    "drop",
+    async event => {
+
+        event.preventDefault();
+
+        dropZone.classList.remove(
+            "border-amber-400"
+        );
+
+        const files =
+            event.dataTransfer.files;
+
+        if (!files.length) return;
+
+        if (!getGeminiKey()) {
+
+            showAlert(
+                "Save your Gemini API key first.",
+                "error"
+            );
+
+            return;
+
+        }
+
+        await handleFiles(
+            files
+        );
+
+    }
+);
+
+
+/* =========================================================
+   PUBLISH
+========================================================= */
+
+document
+.getElementById("uploadForm")
+.addEventListener(
+    "submit",
+    async event => {
+
+        event.preventDefault();
+
+        const title =
+            document
+                .getElementById(
+                    "promptTitle"
+                )
+                .value
+                .trim();
+
+        const category =
+            categorySelect
+                .value
+                .trim();
+
+        if (!title) {
+
+            showAlert(
+                "Enter a post title.",
+                "error"
+            );
+
+            return;
+
+        }
+
+        if (!category) {
+
+            showAlert(
+                "Select a category.",
+                "error"
+            );
+
+            return;
+
+        }
+
+        if (!imageItems.length) {
+
+            showAlert(
+                "Upload at least one image.",
+                "error"
+            );
+
+            return;
+
+        }
+
+        const missingPrompt =
+            imageItems.some(
+                item =>
+                    !item.prompt.trim()
+            );
+
+        if (missingPrompt) {
+
+            showAlert(
+                "Every image needs a prompt. Generate or enter all prompts first.",
+                "error"
+            );
+
+            return;
+
+        }
+
+        if (!getImgBBKey()) {
+
+            showAlert(
+                "Save your ImgBB API key first.",
+                "error"
+            );
+
+            return;
+
+        }
+
+
+        publishBtn.disabled =
+            true;
+
+        publishBtn.classList.add(
+            "opacity-60",
+            "cursor-not-allowed"
+        );
+
+        progressBox.classList.remove(
+            "hidden"
+        );
+
+        try {
+
+            const uploadedAngles =
+                [];
+
+            const total =
+                imageItems.length;
+
+            for (
+                let index = 0;
+                index < total;
+                index++
+            ) {
+
+                const item =
+                    imageItems[index];
+
+                updateProgress(
+                    index,
+                    total,
+                    `Uploading image ${index + 1} of ${total}...`
+                );
+
+                const upload =
+                    await uploadToImgBB(
+                        item.file
+                    );
+
+                uploadedAngles.push({
+
+                    angle:
+                        index + 1,
+
+                    imageUrl:
+                        upload.url,
+
+                    displayUrl:
+                        upload.displayUrl,
+
+                    deleteUrl:
+                        upload.deleteUrl,
+
+                    width:
+                        upload.width,
+
+                    height:
+                        upload.height,
+
+                    prompt:
+                        item.prompt.trim(),
+
+                    originalFileName:
+                        item.file.name,
+
+                    mimeType:
+                        item.file.type
+
+                });
+
+            }
+
+
+            updateProgress(
+                total,
+                total,
+                "Saving post to Firebase..."
+            );
+
+
+            const postData = {
+
+                title,
+
+                category,
+
+                angles:
+                    uploadedAngles,
+
+                imageCount:
+                    uploadedAngles.length,
+
+                coverImage:
+                    uploadedAngles[0]?.imageUrl || "",
+
+                createdAt:
+                    serverTimestamp(),
+
+                updatedAt:
+                    serverTimestamp(),
+
+                status:
+                    "published"
+
+            };
+
+
+            const documentRef =
+                await addDoc(
+                    collection(
+                        db,
+                        "posts"
+                    ),
+                    postData
+                );
+
+
+            updateProgress(
+                total,
+                total,
+                "Published successfully!"
+            );
+
+
+            showAlert(
+                `Published successfully! Post ID: ${documentRef.id}`,
+                "success"
+            );
+
+
+            /*
+                Reset form
+            */
+
+            document
+                .getElementById(
+                    "uploadForm"
+                )
+                .reset();
+
+            selectedFiles =
+                [];
+
+            imageItems =
+                [];
+
+            container.innerHTML =
+                "";
+
+            promptSection.classList.add(
+                "hidden"
+            );
+
+            fileCount.classList.add(
+                "hidden"
+            );
+
+            promptCount.textContent =
+                "";
+
+            imageFiles.value =
+                "";
+
+            setTimeout(
+                () => {
+
+                    progressBox.classList.add(
+                        "hidden"
+                    );
+
+                    progressBar.style.width =
+                        "0%";
+
+                },
+                2500
+            );
+
+        }
+
+        catch (error) {
+
+            console.error(
+                "Publish error:",
+                error
+            );
+
+            showAlert(
+                error.message ||
+                "Publishing failed.",
+                "error"
+            );
+
+        }
+
+        finally {
+
+            publishBtn.disabled =
+                false;
+
+            publishBtn.classList.remove(
+                "opacity-60",
+                "cursor-not-allowed"
+            );
+
+            publishBtn.innerHTML =
+                `
+                <i class="fa-solid fa-cloud-arrow-up"></i>
+                <span>Publish to Cloud</span>
+                `;
+
+        }
+
+    }
+);
+
+
+/* =========================================================
+   PROGRESS
+========================================================= */
+
+function updateProgress(
+    current,
+    total,
+    message
+) {
+
+    const percent =
+        total === 0
+            ? 0
+            : Math.round(
+                (current / total) * 100
+            );
+
+    progressBar.style.width =
+        `${percent}%`;
+
+    progressPercent.textContent =
+        `${percent}%`;
+
+    progressText.textContent =
+        message;
+
+}
+
+
+/* =========================================================
+   UTILITIES
+========================================================= */
+
+function sleep(ms) {
+
+    return new Promise(
+        resolve =>
+            setTimeout(
+                resolve,
+                ms
+            )
+    );
+
+}
+
+
+function escapeHtml(value) {
+
+    return String(value)
+        .replace(
+            /&/g,
+            "&amp;"
+        )
+        .replace(
+            /</g,
+            "&lt;"
+        )
+        .replace(
+            />/g,
+            "&gt;"
+        )
+        .replace(
+            /"/g,
+            "&quot;"
+        )
+        .replace(
+            /'/g,
+            "&#039;"
+        );
+
+}
+
+
+/* =========================================================
+   INITIALIZE
+========================================================= */
+
+loadSavedKeys();
+
+loadCategories();
+
+</script>
+
+</body>
+</html>
