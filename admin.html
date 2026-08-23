@@ -1,0 +1,2347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>PromptGenz - Admin Panel</title>
+
+    <!-- Tailwind -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Font Awesome -->
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    >
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            background:
+                radial-gradient(
+                    circle at 80% 0%,
+                    rgba(245,158,11,.10),
+                    transparent 35%
+                ),
+                #09090b;
+        }
+
+        .glass {
+            background: rgba(24,24,27,.92);
+            backdrop-filter: blur(18px);
+        }
+
+        textarea::-webkit-scrollbar,
+        body::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        textarea::-webkit-scrollbar-thumb,
+        body::-webkit-scrollbar-thumb {
+            background: #3f3f46;
+            border-radius: 10px;
+        }
+
+        .loader {
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(255,255,255,.15);
+            border-top-color: #fbbf24;
+            border-radius: 50%;
+            animation: spin .7s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .upload-active {
+            border-color: #fbbf24 !important;
+            background: rgba(245,158,11,.05) !important;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen text-white">
+
+<div class="max-w-4xl mx-auto px-4 py-6 sm:py-10">
+
+    <div class="glass border border-zinc-800 rounded-3xl shadow-2xl p-5 sm:p-7">
+
+        <!-- =================================================
+             HEADER
+        ================================================== -->
+
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+
+            <div class="flex items-center gap-3">
+
+                <div
+                    class="w-12 h-12 rounded-2xl bg-amber-400
+                           text-zinc-950 flex items-center justify-center
+                           shadow-lg shadow-amber-400/10"
+                >
+                    <i class="fa-solid fa-wand-magic-sparkles text-lg"></i>
+                </div>
+
+                <div>
+                    <h1 class="text-xl sm:text-2xl font-black">
+                        PromptGenz Admin
+                    </h1>
+
+                    <p class="text-xs text-zinc-500 mt-1">
+                        Manage prompts, images & categories
+                    </p>
+                </div>
+
+            </div>
+
+            <a
+                href="index.html"
+                class="bg-zinc-800 hover:bg-zinc-700
+                       px-4 py-2.5 rounded-xl
+                       text-xs font-semibold text-center transition"
+            >
+                <i class="fa-solid fa-arrow-left mr-2"></i>
+                View Site
+            </a>
+
+        </div>
+
+
+        <div class="h-px bg-zinc-800 my-6"></div>
+
+
+        <!-- =================================================
+             GEMINI API KEY
+        ================================================== -->
+
+        <div
+            class="bg-zinc-950 border border-zinc-800
+                   rounded-2xl p-4 mb-6"
+        >
+
+            <label class="block text-xs font-bold text-amber-400 mb-2">
+                <i class="fa-solid fa-key mr-1"></i>
+                Gemini API Key
+            </label>
+
+            <div class="flex flex-col sm:flex-row gap-2">
+
+                <input
+                    id="apiKeyInput"
+                    type="password"
+                    autocomplete="off"
+                    placeholder="Paste your Gemini API key..."
+                    class="flex-1 bg-zinc-900 border border-zinc-800
+                           rounded-xl px-3 py-3 text-xs
+                           outline-none focus:border-amber-400"
+                >
+
+                <button
+                    id="saveApiKeyBtn"
+                    type="button"
+                    class="bg-amber-400 hover:bg-amber-500
+                           text-zinc-950 px-5 py-3
+                           rounded-xl text-xs font-black transition"
+                >
+                    Save Key
+                </button>
+
+            </div>
+
+            <p
+                id="apiKeyStatus"
+                class="text-[10px] text-zinc-500 mt-2"
+            >
+                Gemini is used to generate prompts from each image.
+            </p>
+
+        </div>
+
+
+        <!-- =================================================
+             TITLE
+        ================================================== -->
+
+        <div class="mb-6">
+
+            <label class="block text-xs font-bold text-zinc-300 mb-2">
+                Main Post Title
+            </label>
+
+            <div
+                class="bg-zinc-950 border border-zinc-800
+                       rounded-xl px-3 flex items-center
+                       focus-within:border-amber-400"
+            >
+
+                <i class="fa-solid fa-heading text-zinc-500 mr-3"></i>
+
+                <input
+                    id="promptTitle"
+                    type="text"
+                    placeholder="e.g. Luxury Cinematic Portrait"
+                    class="bg-transparent outline-none
+                           w-full py-3 text-sm"
+                >
+
+            </div>
+
+        </div>
+
+
+        <!-- =================================================
+             CATEGORY
+        ================================================== -->
+
+        <div class="mb-6">
+
+            <label class="block text-xs font-bold text-zinc-300 mb-2">
+                Category
+            </label>
+
+            <div class="flex gap-2">
+
+                <div class="relative flex-1">
+
+                    <select
+                        id="promptCategory"
+                        class="appearance-none w-full
+                               bg-zinc-950 border border-zinc-800
+                               rounded-xl px-3 py-3 pr-10
+                               text-sm outline-none
+                               focus:border-amber-400"
+                    >
+                        <option value="">
+                            Loading categories...
+                        </option>
+                    </select>
+
+                    <i
+                        class="fa-solid fa-chevron-down
+                               absolute right-4 top-1/2
+                               -translate-y-1/2
+                               text-zinc-500 text-xs
+                               pointer-events-none"
+                    ></i>
+
+                </div>
+
+                <button
+                    id="toggleNewCatBtn"
+                    type="button"
+                    class="bg-zinc-800 hover:bg-zinc-700
+                           text-amber-400 px-4 rounded-xl
+                           text-xs font-bold transition"
+                >
+                    <i class="fa-solid fa-plus mr-1"></i>
+                    New
+                </button>
+
+            </div>
+
+
+            <!-- New Category -->
+
+            <div
+                id="newCategoryBox"
+                class="hidden mt-2 flex gap-2"
+            >
+
+                <input
+                    id="newCategoryInput"
+                    type="text"
+                    maxlength="50"
+                    placeholder="Enter new category name..."
+                    class="flex-1 bg-zinc-950
+                           border border-zinc-800
+                           rounded-xl px-3 py-3
+                           text-xs outline-none
+                           focus:border-amber-400"
+                >
+
+                <button
+                    id="saveNewCatBtn"
+                    type="button"
+                    class="bg-amber-400 hover:bg-amber-500
+                           text-zinc-950 px-4
+                           rounded-xl text-xs font-black"
+                >
+                    Add
+                </button>
+
+            </div>
+
+            <p
+                id="categoryStatus"
+                class="text-[10px] text-zinc-600 mt-2"
+            ></p>
+
+        </div>
+
+
+        <!-- =================================================
+             IMAGE UPLOAD
+        ================================================== -->
+
+        <div class="mb-6">
+
+            <label class="block text-xs font-bold text-zinc-300 mb-2">
+
+                <i class="fa-solid fa-images text-amber-400 mr-1"></i>
+
+                Select Images / Multiple Angles
+
+            </label>
+
+
+            <div
+                id="dropZone"
+                class="relative border-2 border-dashed
+                       border-zinc-800 hover:border-amber-400/60
+                       bg-zinc-950 rounded-2xl p-8
+                       text-center transition cursor-pointer"
+            >
+
+                <input
+                    id="imageFiles"
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    class="absolute inset-0 opacity-0
+                           cursor-pointer w-full h-full"
+                >
+
+                <i
+                    class="fa-solid fa-cloud-arrow-up
+                           text-4xl text-amber-400 mb-3"
+                ></i>
+
+                <p class="text-sm font-semibold">
+                    Select images from Gallery
+                </p>
+
+                <p class="text-[10px] text-zinc-500 mt-1">
+                    You can select multiple images / angles
+                </p>
+
+            </div>
+
+
+            <div
+                id="fileCount"
+                class="hidden text-[10px]
+                       text-amber-400 mt-2"
+            ></div>
+
+        </div>
+
+
+        <!-- =================================================
+             IMAGE / PROMPT CARDS
+        ================================================== -->
+
+        <div
+            id="perImagePromptsSection"
+            class="hidden mb-6"
+        >
+
+            <div class="flex items-center justify-between mb-3">
+
+                <label class="text-xs font-bold text-amber-400">
+
+                    <i class="fa-solid fa-wand-magic-sparkles mr-1"></i>
+
+                    Individual Angle Prompts
+
+                </label>
+
+                <span
+                    id="promptCount"
+                    class="text-[10px] text-zinc-500"
+                ></span>
+
+            </div>
+
+
+            <div
+                id="imagePromptPairsContainer"
+                class="space-y-4"
+            ></div>
+
+        </div>
+
+
+        <!-- =================================================
+             PUBLISH
+        ================================================== -->
+
+        <button
+            id="publishBtn"
+            type="button"
+            class="w-full bg-amber-400
+                   hover:bg-amber-500
+                   text-zinc-950 py-4
+                   rounded-xl font-black
+                   text-sm transition
+                   flex items-center justify-center gap-2"
+        >
+
+            <i class="fa-solid fa-cloud-arrow-up"></i>
+
+            <span>
+                Publish to Cloud
+            </span>
+
+        </button>
+
+
+        <!-- =================================================
+             PROGRESS
+        ================================================== -->
+
+        <div
+            id="progressBox"
+            class="hidden mt-5"
+        >
+
+            <div class="flex justify-between mb-2">
+
+                <span
+                    id="progressText"
+                    class="text-xs text-zinc-400"
+                >
+                    Preparing...
+                </span>
+
+                <span
+                    id="progressPercent"
+                    class="text-xs text-amber-400"
+                >
+                    0%
+                </span>
+
+            </div>
+
+            <div
+                class="h-2 bg-zinc-800
+                       rounded-full overflow-hidden"
+            >
+
+                <div
+                    id="progressBar"
+                    class="h-full bg-amber-400
+                           transition-all duration-300"
+                    style="width:0%"
+                ></div>
+
+            </div>
+
+        </div>
+
+
+        <!-- =================================================
+             ALERT
+        ================================================== -->
+
+        <div
+            id="alertBox"
+            class="hidden mt-5 p-4
+                   rounded-xl text-xs border"
+        ></div>
+
+    </div>
+
+</div>
+
+
+<!-- =====================================================
+     FIREBASE + APPLICATION
+====================================================== -->
+
+<script type="module">
+
+    /* =====================================================
+       FIREBASE IMPORTS
+    ================================================== */
+
+    import {
+        initializeApp
+    } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
+
+    import {
+        getFirestore,
+        collection,
+        addDoc,
+        getDocs,
+        setDoc,
+        doc,
+        serverTimestamp,
+        query,
+        orderBy
+    } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
+
+    import {
+        getStorage,
+        ref,
+        uploadBytes,
+        getDownloadURL
+    } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-storage.js";
+
+
+    /* =====================================================
+       FIREBASE CONFIG
+    ================================================== */
+
+    const firebaseConfig = {
+
+        apiKey:
+            "AIzaSyAcyASMFEogpp8BwgJc4hsPGNoIZOb6dKo",
+
+        authDomain:
+            "promptgenz-daaf3.firebaseapp.com",
+
+        projectId:
+            "promptgenz-daaf3",
+
+        storageBucket:
+            "promptgenz-daaf3.firebasestorage.app",
+
+        messagingSenderId:
+            "751005531769",
+
+        appId:
+            "1:751005531769:web:20b8330970e001dd691ea8",
+
+        measurementId:
+            "G-VF4QP1SLSQ"
+    };
+
+
+    const app =
+        initializeApp(firebaseConfig);
+
+    const db =
+        getFirestore(app);
+
+    const storage =
+        getStorage(app);
+
+
+    /* =====================================================
+       GEMINI
+    ================================================== */
+
+    /*
+       You can change this model if your Gemini API
+       project exposes another supported model.
+    */
+
+    const GEMINI_MODEL =
+        "gemini-2.5-flash";
+
+    const GEMINI_ENDPOINT =
+        `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
+
+
+    /* =====================================================
+       DEFAULT CATEGORIES
+    ================================================== */
+
+    const DEFAULT_CATEGORIES = [
+
+        "Portraits",
+        "Cinematic",
+        "Couple",
+        "Fashion",
+        "Trending",
+        "Lifestyle",
+        "Travel",
+        "Fantasy",
+        "Street",
+        "Wedding"
+
+    ];
+
+
+    /* =====================================================
+       STATE
+    ================================================== */
+
+    let selectedFiles = [];
+
+    let imageItems = [];
+
+
+    /* =====================================================
+       DOM
+    ================================================== */
+
+    const imageFiles =
+        document.getElementById(
+            "imageFiles"
+        );
+
+    const dropZone =
+        document.getElementById(
+            "dropZone"
+        );
+
+    const categorySelect =
+        document.getElementById(
+            "promptCategory"
+        );
+
+    const categoryStatus =
+        document.getElementById(
+            "categoryStatus"
+        );
+
+    const imageContainer =
+        document.getElementById(
+            "imagePromptPairsContainer"
+        );
+
+    const promptSection =
+        document.getElementById(
+            "perImagePromptsSection"
+        );
+
+    const publishBtn =
+        document.getElementById(
+            "publishBtn"
+        );
+
+    const progressBox =
+        document.getElementById(
+            "progressBox"
+        );
+
+    const progressBar =
+        document.getElementById(
+            "progressBar"
+        );
+
+    const progressText =
+        document.getElementById(
+            "progressText"
+        );
+
+    const progressPercent =
+        document.getElementById(
+            "progressPercent"
+        );
+
+    const alertBox =
+        document.getElementById(
+            "alertBox"
+        );
+
+
+    /* =====================================================
+       API KEY
+    ================================================== */
+
+    function getGeminiKey() {
+
+        return (
+            localStorage.getItem(
+                "promptgenz_gemini_key"
+            ) || ""
+        ).trim();
+
+    }
+
+
+    function loadGeminiKey() {
+
+        const key =
+            getGeminiKey();
+
+        if (!key) {
+            return;
+        }
+
+        document
+            .getElementById(
+                "apiKeyInput"
+            )
+            .value = key;
+
+        document
+            .getElementById(
+                "apiKeyStatus"
+            )
+            .innerHTML =
+            `
+            <span class="text-emerald-400">
+                <i class="fa-solid fa-circle-check mr-1"></i>
+                Gemini API key loaded.
+            </span>
+            `;
+
+    }
+
+
+    document
+        .getElementById(
+            "saveApiKeyBtn"
+        )
+        .addEventListener(
+            "click",
+            () => {
+
+                const input =
+                    document.getElementById(
+                        "apiKeyInput"
+                    );
+
+                const key =
+                    input.value.trim();
+
+                if (!key) {
+
+                    showAlert(
+                        "Please enter Gemini API key.",
+                        "error"
+                    );
+
+                    return;
+                }
+
+                localStorage.setItem(
+                    "promptgenz_gemini_key",
+                    key
+                );
+
+                document
+                    .getElementById(
+                        "apiKeyStatus"
+                    )
+                    .innerHTML =
+                    `
+                    <span class="text-emerald-400">
+                        <i class="fa-solid fa-circle-check mr-1"></i>
+                        Gemini API key saved.
+                    </span>
+                    `;
+
+                showAlert(
+                    "Gemini API key saved successfully.",
+                    "success"
+                );
+
+            }
+        );
+
+
+    /* =====================================================
+       ALERT
+    ================================================== */
+
+    function showAlert(
+        message,
+        type = "success"
+    ) {
+
+        alertBox.className =
+            "mt-5 p-4 rounded-xl text-xs border";
+
+        if (type === "success") {
+
+            alertBox.classList.add(
+                "bg-emerald-500/10",
+                "border-emerald-500/30",
+                "text-emerald-400"
+            );
+
+            alertBox.innerHTML =
+                `
+                <i class="fa-solid fa-circle-check mr-2"></i>
+                ${escapeHtml(message)}
+                `;
+
+        }
+
+        else if (type === "error") {
+
+            alertBox.classList.add(
+                "bg-red-500/10",
+                "border-red-500/30",
+                "text-red-400"
+            );
+
+            alertBox.innerHTML =
+                `
+                <i class="fa-solid fa-circle-exclamation mr-2"></i>
+                ${escapeHtml(message)}
+                `;
+
+        }
+
+        else {
+
+            alertBox.classList.add(
+                "bg-amber-500/10",
+                "border-amber-500/30",
+                "text-amber-400"
+            );
+
+            alertBox.innerHTML =
+                `
+                <i class="fa-solid fa-info-circle mr-2"></i>
+                ${escapeHtml(message)}
+                `;
+
+        }
+
+        alertBox.classList.remove(
+            "hidden"
+        );
+
+    }
+
+
+    /* =====================================================
+       CATEGORY LOADING
+    ================================================== */
+
+    async function loadCategories() {
+
+        categoryStatus.textContent =
+            "Loading categories from Firebase...";
+
+        categorySelect.innerHTML =
+            `
+            <option value="">
+                Loading categories...
+            </option>
+            `;
+
+        try {
+
+            const categoriesRef =
+                collection(
+                    db,
+                    "categories"
+                );
+
+            const snapshot =
+                await getDocs(
+                    categoriesRef
+                );
+
+
+            /*
+              If categories collection is empty,
+              create default categories.
+            */
+
+            if (snapshot.empty) {
+
+                categoryStatus.textContent =
+                    "Creating default categories...";
+
+                for (
+                    const category
+                    of DEFAULT_CATEGORIES
+                ) {
+
+                    await setDoc(
+                        doc(
+                            db,
+                            "categories",
+                            category
+                        ),
+                        {
+                            name: category,
+                            createdAt:
+                                serverTimestamp()
+                        }
+                    );
+
+                }
+
+                /*
+                   Reload after creation.
+                */
+
+                return await loadCategories();
+
+            }
+
+
+            categorySelect.innerHTML =
+                `
+                <option value="">
+                    Select category
+                </option>
+                `;
+
+
+            const categories = [];
+
+
+            snapshot.forEach(
+                categoryDoc => {
+
+                    const data =
+                        categoryDoc.data();
+
+                    const name =
+                        String(
+                            data?.name ||
+                            categoryDoc.id
+                        ).trim();
+
+                    if (name) {
+                        categories.push(
+                            name
+                        );
+                    }
+
+                }
+            );
+
+
+            /*
+              Sort alphabetically.
+            */
+
+            categories.sort(
+                (a, b) =>
+                    a.localeCompare(b)
+            );
+
+
+            categories.forEach(
+                name => {
+
+                    const option =
+                        document.createElement(
+                            "option"
+                        );
+
+                    option.value =
+                        name;
+
+                    option.textContent =
+                        name;
+
+                    categorySelect.appendChild(
+                        option
+                    );
+
+                }
+            );
+
+
+            categoryStatus.textContent =
+                `${categories.length} categories loaded.`;
+
+        }
+
+        catch (error) {
+
+            console.error(
+                "CATEGORY LOAD ERROR:",
+                error
+            );
+
+            categorySelect.innerHTML =
+                `
+                <option value="">
+                    Categories unavailable
+                </option>
+                `;
+
+            categoryStatus.textContent =
+                "Firebase category access failed.";
+
+            showAlert(
+                "Category error: " +
+                getFirebaseError(error),
+                "error"
+            );
+
+        }
+
+    }
+
+
+    /* =====================================================
+       NEW CATEGORY UI
+    ================================================== */
+
+    document
+        .getElementById(
+            "toggleNewCatBtn"
+        )
+        .addEventListener(
+            "click",
+            () => {
+
+                document
+                    .getElementById(
+                        "newCategoryBox"
+                    )
+                    .classList.toggle(
+                        "hidden"
+                    );
+
+                const input =
+                    document.getElementById(
+                        "newCategoryInput"
+                    );
+
+                if (
+                    !document
+                        .getElementById(
+                            "newCategoryBox"
+                        )
+                        .classList.contains(
+                            "hidden"
+                        )
+                ) {
+
+                    input.focus();
+
+                }
+
+            }
+        );
+
+
+    /* =====================================================
+       CREATE CATEGORY
+    ================================================== */
+
+    document
+        .getElementById(
+            "saveNewCatBtn"
+        )
+        .addEventListener(
+            "click",
+            createCategory
+        );
+
+
+    document
+        .getElementById(
+            "newCategoryInput"
+        )
+        .addEventListener(
+            "keydown",
+            event => {
+
+                if (
+                    event.key === "Enter"
+                ) {
+
+                    event.preventDefault();
+
+                    createCategory();
+
+                }
+
+            }
+        );
+
+
+    async function createCategory() {
+
+        const input =
+            document.getElementById(
+                "newCategoryInput"
+            );
+
+        const category =
+            input.value.trim();
+
+
+        if (!category) {
+
+            showAlert(
+                "Enter a category name.",
+                "error"
+            );
+
+            input.focus();
+
+            return;
+
+        }
+
+
+        if (
+            category.length < 2
+        ) {
+
+            showAlert(
+                "Category name is too short.",
+                "error"
+            );
+
+            return;
+
+        }
+
+
+        try {
+
+            const categoryId =
+                makeSafeCategoryId(
+                    category
+                );
+
+
+            await setDoc(
+                doc(
+                    db,
+                    "categories",
+                    categoryId
+                ),
+                {
+                    name: category,
+                    slug: categoryId,
+                    createdAt:
+                        serverTimestamp()
+                }
+            );
+
+
+            input.value =
+                "";
+
+
+            document
+                .getElementById(
+                    "newCategoryBox"
+                )
+                .classList.add(
+                    "hidden"
+                );
+
+
+            /*
+              Reload all categories.
+            */
+
+            await loadCategories();
+
+
+            /*
+              Select newly-created category.
+            */
+
+            categorySelect.value =
+                category;
+
+
+            showAlert(
+                `"${category}" category created successfully.`,
+                "success"
+            );
+
+        }
+
+        catch (error) {
+
+            console.error(
+                "CREATE CATEGORY ERROR:",
+                error
+            );
+
+            showAlert(
+                "Could not create category: " +
+                getFirebaseError(error),
+                "error"
+            );
+
+        }
+
+    }
+
+
+    function makeSafeCategoryId(
+        name
+    ) {
+
+        return name
+            .toLowerCase()
+            .trim()
+            .replace(
+                /[^a-z0-9]+/g,
+                "-"
+            )
+            .replace(
+                /^-+|-+$/g,
+                ""
+            )
+            .substring(
+                0,
+                100
+            ) || "category";
+
+    }
+
+
+    /* =====================================================
+       IMAGE COMPRESSION / PREVIEW
+    ================================================== */
+
+    function createPreview(
+        file
+    ) {
+
+        return new Promise(
+            (resolve, reject) => {
+
+                const reader =
+                    new FileReader();
+
+                reader.onload =
+                    event => {
+
+                        const img =
+                            new Image();
+
+                        img.onload =
+                            () => {
+
+                                const MAX =
+                                    1000;
+
+                                let width =
+                                    img.width;
+
+                                let height =
+                                    img.height;
+
+
+                                const ratio =
+                                    Math.min(
+                                        MAX / width,
+                                        MAX / height,
+                                        1
+                                    );
+
+
+                                width =
+                                    Math.round(
+                                        width * ratio
+                                    );
+
+                                height =
+                                    Math.round(
+                                        height * ratio
+                                    );
+
+
+                                const canvas =
+                                    document
+                                        .createElement(
+                                            "canvas"
+                                        );
+
+                                canvas.width =
+                                    width;
+
+                                canvas.height =
+                                    height;
+
+
+                                const ctx =
+                                    canvas
+                                        .getContext(
+                                            "2d"
+                                        );
+
+
+                                ctx.drawImage(
+                                    img,
+                                    0,
+                                    0,
+                                    width,
+                                    height
+                                );
+
+
+                                resolve(
+                                    canvas.toDataURL(
+                                        "image/jpeg",
+                                        0.82
+                                    )
+                                );
+
+                            };
+
+
+                        img.onerror =
+                            () => {
+
+                                reject(
+                                    new Error(
+                                        "Could not load image."
+                                    )
+                                );
+
+                            };
+
+
+                        img.src =
+                            event.target.result;
+
+                    };
+
+
+                reader.onerror =
+                    () => {
+
+                        reject(
+                            new Error(
+                                "Could not read image."
+                            )
+                        );
+
+                    };
+
+
+                reader.readAsDataURL(
+                    file
+                );
+
+            }
+        );
+
+    }
+
+
+    /* =====================================================
+       IMAGE SELECTION
+    ================================================== */
+
+    imageFiles.addEventListener(
+        "change",
+        async event => {
+
+            const files =
+                Array.from(
+                    event.target.files || []
+                );
+
+            if (!files.length) {
+                return;
+            }
+
+            await handleSelectedFiles(
+                files
+            );
+
+        }
+    );
+
+
+    /* =====================================================
+       HANDLE SELECTED FILES
+    ================================================== */
+
+    async function handleSelectedFiles(
+        files
+    ) {
+
+        const validFiles =
+            files.filter(
+                file =>
+                    file.type &&
+                    file.type.startsWith(
+                        "image/"
+                    )
+            );
+
+
+        if (!validFiles.length) {
+
+            showAlert(
+                "Please select valid image files.",
+                "error"
+            );
+
+            return;
+
+        }
+
+
+        selectedFiles =
+            validFiles;
+
+        imageItems =
+            [];
+
+        imageContainer.innerHTML =
+            "";
+
+
+        promptSection.classList.remove(
+            "hidden"
+        );
+
+
+        document
+            .getElementById(
+                "fileCount"
+            )
+            .classList.remove(
+                "hidden"
+            );
+
+
+        document
+            .getElementById(
+                "fileCount"
+            )
+            .textContent =
+            `${validFiles.length} image(s) selected`;
+
+
+        document
+            .getElementById(
+                "promptCount"
+            )
+            .textContent =
+            `${validFiles.length} angle(s)`;
+
+
+        /*
+           IMPORTANT:
+           Preview is created FIRST.
+           Gemini API key is NOT required here.
+        */
+
+        for (
+            let i = 0;
+            i < validFiles.length;
+            i++
+        ) {
+
+            try {
+
+                const preview =
+                    await createPreview(
+                        validFiles[i]
+                    );
+
+
+                const item = {
+
+                    file:
+                        validFiles[i],
+
+                    preview,
+
+                    prompt:
+                        ""
+
+                };
+
+
+                imageItems.push(
+                    item
+                );
+
+
+                renderImageCard(
+                    i,
+                    item
+                );
+
+            }
+
+            catch (error) {
+
+                console.error(
+                    error
+                );
+
+            }
+
+        }
+
+
+        /*
+           After all images are visible,
+           generate prompts.
+        */
+
+        if (
+            getGeminiKey()
+        ) {
+
+            for (
+                let i = 0;
+                i < imageItems.length;
+                i++
+            ) {
+
+                await generatePrompt(
+                    i
+                );
+
+                if (
+                    i <
+                    imageItems.length - 1
+                ) {
+
+                    await sleep(
+                        800
+                    );
+
+                }
+
+            }
+
+        }
+
+        else {
+
+            showAlert(
+                "Images selected successfully. Save your Gemini API key to generate prompts.",
+                "info"
+            );
+
+        }
+
+    }
+
+
+    /* =====================================================
+       RENDER IMAGE CARD
+    ================================================== */
+
+    function renderImageCard(
+        index,
+        item
+    ) {
+
+        const card =
+            document.createElement(
+                "div"
+            );
+
+
+        card.id =
+            `image-card-${index}`;
+
+
+        card.className =
+            "bg-zinc-950 border border-zinc-800 rounded-2xl p-3";
+
+
+        card.innerHTML =
+        `
+
+        <div class="flex gap-3">
+
+            <img
+                src="${item.preview}"
+                class="w-20 h-20 sm:w-24 sm:h-24
+                       object-cover rounded-xl
+                       border border-zinc-800
+                       flex-shrink-0"
+            >
+
+            <div class="flex-1 min-w-0">
+
+                <div class="flex justify-between
+                            items-start gap-2">
+
+                    <div class="min-w-0">
+
+                        <span
+                            class="text-[10px]
+                                   text-amber-400
+                                   font-black"
+                        >
+                            ANGLE ${index + 1}
+                        </span>
+
+                        <p
+                            class="text-[10px]
+                                   text-zinc-600
+                                   truncate mt-1"
+                        >
+                            ${escapeHtml(
+                                item.file.name
+                            )}
+                        </p>
+
+                    </div>
+
+                    <span
+                        id="status-${index}"
+                        class="text-[10px]
+                               text-zinc-500
+                               whitespace-nowrap"
+                    >
+                        Ready
+                    </span>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <textarea
+            id="prompt-${index}"
+            rows="9"
+            placeholder="Gemini generated prompt will appear here..."
+            class="w-full mt-3
+                   bg-zinc-900
+                   border border-zinc-800
+                   rounded-xl p-3
+                   text-xs leading-relaxed
+                   text-zinc-200
+                   outline-none
+                   focus:border-amber-400
+                   resize-y"
+        ></textarea>
+
+
+        <div class="flex justify-between items-center mt-2">
+
+            <span
+                id="length-${index}"
+                class="text-[9px] text-zinc-600"
+            >
+                0 characters
+            </span>
+
+            <button
+                type="button"
+                data-index="${index}"
+                class="retry-btn
+                       bg-zinc-800
+                       hover:bg-zinc-700
+                       text-amber-400
+                       px-3 py-2
+                       rounded-lg
+                       text-[10px]"
+            >
+                <i class="fa-solid fa-rotate-right mr-1"></i>
+                Regenerate
+            </button>
+
+        </div>
+
+        `;
+
+
+        imageContainer.appendChild(
+            card
+        );
+
+
+        const textarea =
+            document.getElementById(
+                `prompt-${index}`
+            );
+
+
+        textarea.addEventListener(
+            "input",
+            () => {
+
+                imageItems[index].prompt =
+                    textarea.value;
+
+                document
+                    .getElementById(
+                        `length-${index}`
+                    )
+                    .textContent =
+                    `${textarea.value.length} characters`;
+
+            }
+        );
+
+    }
+
+
+    /* =====================================================
+       GEMINI PROMPT
+    ================================================== */
+
+    async function generatePrompt(
+        index
+    ) {
+
+        const apiKey =
+            getGeminiKey();
+
+
+        const item =
+            imageItems[index];
+
+
+        const status =
+            document.getElementById(
+                `status-${index}`
+            );
+
+
+        const textarea =
+            document.getElementById(
+                `prompt-${index}`
+            );
+
+
+        if (!apiKey) {
+
+            status.innerHTML =
+                `
+                <span class="text-amber-400">
+                    API key required
+                </span>
+                `;
+
+            return;
+
+        }
+
+
+        status.innerHTML =
+            `
+            <span class="text-amber-400">
+                <i class="fa-solid fa-spinner fa-spin mr-1"></i>
+                Analyzing...
+            </span>
+            `;
+
+
+        try {
+
+            const base64 =
+                await fileToBase64(
+                    item.file
+                );
+
+
+            const commaIndex =
+                base64.indexOf(",");
+
+
+            if (
+                commaIndex === -1
+            ) {
+
+                throw new Error(
+                    "Invalid image data."
+                );
+
+            }
+
+
+            const meta =
+                base64.substring(
+                    0,
+                    commaIndex
+                );
+
+
+            const cleanBase64 =
+                base64.substring(
+                    commaIndex + 1
+                );
+
+
+            const mimeMatch =
+                meta.match(
+                    /data:(.*?);base64/
+                );
+
+
+            const mimeType =
+                mimeMatch
+                    ? mimeMatch[1]
+                    : item.file.type;
+
+
+            const instruction = `
+You are an elite AI vision analyst and professional prompt engineer.
+
+Analyze the uploaded reference image extremely carefully.
+
+Create ONE highly detailed image-generation prompt that recreates this exact image.
+
+Describe all visible details, including:
+
+1. Subject appearance
+2. Face characteristics
+3. Hair style and hair texture
+4. Exact clothing
+5. Fabric type
+6. Clothing colors and shades
+7. Patterns, embroidery and accessories
+8. Body pose
+9. Hand position
+10. Head position
+11. Facial expression
+12. Camera angle
+13. Shot type
+14. Framing
+15. Lens perspective
+16. Background
+17. Architecture
+18. Environment
+19. Lighting direction
+20. Shadows
+21. Highlights
+22. Skin texture
+23. Depth of field
+24. Background blur
+25. Color grading
+26. Atmosphere
+27. Photorealistic details
+28. Composition
+29. Small visual details
+
+If there is a person, include clear instructions that the user can replace the person's identity/face with their own face while preserving the reference pose, clothing, camera angle, lighting, composition and environment.
+
+The prompt must be suitable for a modern AI image-generation model.
+
+Write at least 8 detailed sentences.
+
+Return ONLY the final prompt.
+
+Do not use markdown.
+
+Do not add a title.
+
+Do not explain the prompt.
+`;
+
+
+            const response =
+                await fetch(
+                    `${GEMINI_ENDPOINT}?key=${encodeURIComponent(apiKey)}`,
+                    {
+                        method:
+                            "POST",
+
+                        headers: {
+                            "Content-Type":
+                                "application/json"
+                        },
+
+                        body:
+                            JSON.stringify({
+
+                                contents: [
+
+                                    {
+
+                                        role:
+                                            "user",
+
+                                        parts: [
+
+                                            {
+                                                text:
+                                                    instruction
+                                            },
+
+                                            {
+                                                inline_data: {
+
+                                                    mime_type:
+                                                        mimeType,
+
+                                                    data:
+                                                        cleanBase64
+
+                                                }
+                                            }
+
+                                        ]
+
+                                    }
+
+                                ],
+
+                                generationConfig: {
+
+                                    temperature:
+                                        0.7,
+
+                                    maxOutputTokens:
+                                        3000
+
+                                }
+
+                            })
+                    }
+                );
+
+
+            const data =
+                await response.json();
+
+
+            if (!response.ok) {
+
+                console.error(
+                    "Gemini API ERROR:",
+                    data
+                );
+
+                throw new Error(
+                    data?.error?.message ||
+                    `Gemini HTTP ${response.status}`
+                );
+
+            }
+
+
+            const parts =
+                data
+                    ?.candidates?.[0]
+                    ?.content?.parts || [];
+
+
+            const prompt =
+                parts
+                    .map(
+                        part =>
+                            part.text || ""
+                    )
+                    .join("")
+                    .trim();
+
+
+            if (!prompt) {
+
+                throw new Error(
+                    "Gemini returned an empty prompt."
+                );
+
+            }
+
+
+            item.prompt =
+                prompt;
+
+
+            textarea.value =
+                prompt;
+
+
+            document
+                .getElementById(
+                    `length-${index}`
+                )
+                .textContent =
+                `${prompt.length} characters`;
+
+
+            status.innerHTML =
+                `
+                <span class="text-emerald-400">
+                    <i class="fa-solid fa-check mr-1"></i>
+                    Ready
+                </span>
+                `;
+
+        }
+
+        catch (error) {
+
+            console.error(
+                `Gemini Angle ${index + 1}:`,
+                error
+            );
+
+
+            status.innerHTML =
+                `
+                <span class="text-red-400">
+                    <i class="fa-solid fa-xmark mr-1"></i>
+                    Failed
+                </span>
+                `;
+
+
+            showAlert(
+                `Angle ${index + 1}: ${error.message}`,
+                "error"
+            );
+
+        }
+
+    }
+
+
+    /* =====================================================
+       FILE TO BASE64
+    ================================================== */
+
+    function fileToBase64(
+        file
+    ) {
+
+        return new Promise(
+            (
+                resolve,
+                reject
+            ) => {
+
+                const reader =
+                    new FileReader();
+
+
+                reader.onload =
+                    () => {
+
+                        resolve(
+                            reader.result
+                        );
+
+                    };
+
+
+                reader.onerror =
+                    () => {
+
+                        reject(
+                            new Error(
+                                "Could not read image."
+                            )
+                        );
+
+                    };
+
+
+                reader.readAsDataURL(
+                    file
+                );
+
+            }
+        );
+
+    }
+
+
+    /* =====================================================
+       REGENERATE BUTTON
+    ================================================== */
+
+    imageContainer.addEventListener(
+        "click",
+        async event => {
+
+            const button =
+                event.target.closest(
+                    ".retry-btn"
+                );
+
+
+            if (!button) {
+                return;
+            }
+
+
+            const index =
+                Number(
+                    button.dataset.index
+                );
+
+
+            if (
+                !getGeminiKey()
+            ) {
+
+                showAlert(
+                    "Save Gemini API key first.",
+                    "error"
+                );
+
+                return;
+
+            }
+
+
+            await generatePrompt(
+                index
+            );
+
+        }
+    );
+
+
+    /* =====================================================
+       DRAG & DROP
+    ================================================== */
+
+    dropZone.addEventListener(
+        "dragover",
+        event => {
+
+            event.preventDefault();
+
+            dropZone.classList.add(
+                "upload-active"
+            );
+
+        }
+    );
+
+
+    dropZone.addEventListener(
+        "dragleave",
+        () => {
+
+            dropZone.classList.remove(
+                "upload-active"
+            );
+
+        }
+    );
+
+
+    dropZone.addEventListener(
+        "drop",
+        async event => {
+
+            event.preventDefault();
+
+            dropZone.classList.remove(
+                "upload-active"
+            );
+
+
+            const files =
+                Array.from(
+                    event.dataTransfer.files || []
+                );
+
+
+            if (!files.length) {
+                return;
+            }
+
+
+            await handleSelectedFiles(
+                files
+            );
+
+        }
+    );
+
+
+    /* =====================================================
+       FIREBASE STORAGE UPLOAD
+    ================================================== */
+
+    async function uploadImage(
+        file,
+        index
+    ) {
+
+        const safeName =
+            file.name
+                .replace(
+                    /[^a-zA-Z0-9._-]/g,
+                    "_"
+                );
+
+
+        const uniqueName =
+            `${Date.now()}_${index}_${safeName}`;
+
+
+        const path =
+            `promptgenz/posts/${uniqueName}`;
+
+
+        const storageRef =
+            ref(
+                storage,
+                path
+            );
+
+
+        const snapshot =
+            await uploadBytes(
+                storageRef,
+                file,
+                {
+                    contentType:
+                        file.type
+                }
+            );
+
+
+        const url =
+            await getDownloadURL(
+                snapshot.ref
+            );
+
+
+        return {
+
+            url,
+
+            path
+
+        };
+
+    }
+
+
+    /* =====================================================
+       PUBLISH
+    ================================================== */
+
+    publishBtn.addEventListener(
+        "click",
+        publishPost
+    );
+
+
+    async function publishPost() {
+
+        const title =
+            document
+                .getElementById(
+                    "promptTitle"
+                )
+                .value
+                .trim();
+
+
+        const category =
+            categorySelect
+                .value
+                .trim();
+
+
+        if (!title) {
+
+            showAlert(
+                "Please enter a post title.",
+                "error"
+            );
+
+            return;
+
+        }
+
+
+        if (!category) {
+
+            showAlert(
+                "Please select a category.",
+                "error"
+            );
+
+            return;
+
+        }
+
+
+        if (!imageItems.length) {
+
+            showAlert(
+                "Please select at least one image.",
+                "error"
+            );
+
+            return;
+
+        }
+
+
+        const missingPrompt =
+            imageItems.some(
+                item =>
+                    !item.prompt.trim()
+            );
+
+
+        if (missingPrompt) {
+
+            showAlert(
+                "Every image must have a prompt.",
+                "error"
+            );
+
+            return;
+
+        }
+
+
+        setPublishing(
+            true
+        );
+
+
+        progressBox.classList.remove(
+            "hidden"
+        );
+
+
+        try {
+
+            const angles =
+                [];
+
+
+            const total =
+                imageItems.length;
+
+
+            /*
+               Upload every image separately.
+            */
+
+            for (
+                let i = 0;
+                i < total;
+                i++
+            ) {
+
+                updateProgress(
+                    i,
+                    total + 1,
+                    `Uploading angle ${i + 1} of ${total}...`
+                );
+
+
+                const result =
+                    await uploadImage(
+                        imageItems[i].file,
+                        i
+                    );
+
+
+                angles.push({
+
+                    angle:
+                        i + 1,
+
+                    imageUrl:
+                        result.url,
+
+                    storagePath:
+                        result.path,
+
+                    prompt:
+                        imageItems[i
