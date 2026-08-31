@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PromptGenZ - AI Prompt Gallery</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .scrollbar-none::-webkit-scrollbar { display: none; }
+        .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-zinc-950 text-white font-sans min-h-screen pb-24">
+
+    <!-- Top Header -->
+    <header class="p-4 flex items-center justify-between sticky top-0 bg-zinc-950/80 backdrop-blur-md z-30">
+        <h1 class="text-lg font-bold text-white tracking-wide">PromptGenZ</h1>
+        <div class="flex items-center space-x-3">
+            <div onclick="openProfileModal(); updateNavActive(document.getElementById('navProfileBtn'))" class="w-8 h-8 rounded-full bg-zinc-900 border border-zinc-800 overflow-hidden flex items-center justify-center cursor-pointer hover:border-amber-400 transition">
+                <i class="fa-solid fa-user text-zinc-400 text-xs"></i>
+            </div>
+        </div>
+    </header>
+
+    <!-- Search Bar -->
+    <div class="px-4 pb-3">
+        <div class="relative bg-zinc-900/90 border border-zinc-800/80 rounded-2xl flex items-center px-4 py-3 focus-within:border-amber-400 transition">
+            <i class="fa-solid fa-magnifying-glass text-zinc-500 mr-3 text-sm"></i>
+            <input type="text" id="searchInput" placeholder="Search prompts, tags, themes..." class="bg-transparent border-none outline-none text-white w-full text-sm placeholder-zinc-600">
+        </div>
+    </div>
+
+    <!-- Featured Carousel Section -->
+    <section class="px-4 mb-6">
+        <div id="featuredCarousel" class="flex space-x-3 overflow-x-auto scrollbar-none snap-x snap-mandatory pb-2">
+            <!-- Dynamic Featured Cards -->
+        </div>
+    </section>
+
+    <!-- Adsterra Banner Ad Space -->
+    <div class="px-4 mb-6">
+        <div class="w-full bg-zinc-900/40 border border-zinc-800/60 rounded-2xl p-2 min-h-[90px] flex flex-col items-center justify-center text-center overflow-hidden">
+            <span class="text-[9px] text-zinc-600 uppercase tracking-widest mb-1">Advertisement</span>
+            <div class="text-xs text-zinc-500 w-full flex justify-center" id="topAdContainer"></div>
+        </div>
+    </div>
+
+    <!-- Trending Now Section -->
+    <section class="mb-6">
+        <div class="px-4 flex items-center justify-between mb-3">
+            <div>
+                <h2 id="sectionTitle" class="text-sm font-bold text-white">Trending now</h2>
+                <p id="sectionSubtitle" class="text-[10px] text-zinc-400">Hottest prompts this week</p>
+            </div>
+        </div>
+        <div id="trendingGrid" class="flex space-x-3 overflow-x-auto px-4 scrollbar-none pb-2">
+            <!-- Dynamic Trending Cards -->
+        </div>
+    </section>
+
+    <!-- Live Gallery Section -->
+    <main class="px-4">
+        <div class="flex items-center justify-between mb-3">
+            <h2 id="galleryHeading" class="text-sm font-bold text-white">Gallery</h2>
+        </div>
+
+        <!-- Category Filter Pills -->
+        <div id="categoryPillsContainer" class="flex space-x-2 overflow-x-auto scrollbar-none mb-4 pb-1">
+            <button onclick="filterCategory('All')" class="category-pill active bg-white text-zinc-950 px-4 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition cursor-pointer flex items-center space-x-1.5 shadow-sm">
+                <i class="fa-solid fa-sparkles text-xs"></i><span>All</span>
+            </button>
+        </div>
+
+        <!-- Gallery Grid -->
+        <div id="galleryGrid" class="grid grid-cols-2 gap-3">
+            <!-- Dynamic gallery items -->
+        </div>
+    </main>
+
+    <!-- Prompt Detail Popup Modal -->
+    <div id="detailModal" class="fixed inset-0 bg-black/90 backdrop-blur-md hidden z-50 flex flex-col justify-end items-center p-0">
+        <div class="bg-zinc-950 border-t border-zinc-800 w-full max-w-lg h-[92vh] rounded-t-[32px] overflow-y-auto flex flex-col relative shadow-2xl p-5 space-y-5">
+            <button id="closeModalBtn" class="absolute top-5 right-5 bg-zinc-800/80 hover:bg-zinc-700 text-white w-9 h-9 rounded-full flex items-center justify-center z-20 transition cursor-pointer">
+                <i class="fa-solid fa-xmark text-sm"></i>
+            </button>
+            <div id="modalBody" class="space-y-5 pb-10"></div>
+        </div>
+    </div>
+
+    <!-- Profile & Premium Popup Modal -->
+    <div id="profileModal" class="fixed inset-0 bg-black/90 backdrop-blur-md hidden z-50 flex flex-col justify-end items-center p-0">
+        <div class="bg-zinc-950 border-t border-zinc-800 w-full max-w-lg h-[88vh] rounded-t-[32px] overflow-y-auto flex flex-col relative shadow-2xl p-6 space-y-6">
+            <button onclick="closeProfileModal()" class="absolute top-5 right-5 bg-zinc-800/80 hover:bg-zinc-700 text-white w-9 h-9 rounded-full flex items-center justify-center z-20 transition cursor-pointer">
+                <i class="fa-solid fa-xmark text-sm"></i>
+            </button>
+            
+            <div class="flex items-center space-x-4 pt-2">
+                <div class="w-16 h-16 rounded-full bg-zinc-900 border-2 border-amber-400 flex items-center justify-center text-amber-400 text-xl shadow-md">
+                    <i class="fa-solid fa-user"></i>
+                </div>
+                <div>
+                    <h3 id="userNameDisplay" class="text-base font-bold text-white">Guest User</h3>
+                    <p id="userStatusDisplay" class="text-xs text-zinc-400">Free Plan</p>
+                </div>
+            </div>
+
+            <div id="premiumBadgeBox" class="hidden bg-gradient-to-r from-amber-500/20 to-yellow-500/10 border border-amber-500/40 p-4 rounded-2xl flex items-center space-x-3">
+                <i class="fa-solid fa-crown text-amber-400 text-xl"></i>
+                <div>
+                    <h4 class="text-xs font-bold text-amber-300">VIP Premium Active</h4>
+                    <p class="text-[10px] text-zinc-400">You have full access to all exclusive prompts.</p>
+                </div>
+            </div>
+
+            <div class="space-y-2">
+                <button onclick="handleGoogleLogin()" class="w-full bg-white hover:bg-zinc-200 text-zinc-900 py-3.5 rounded-2xl text-sm font-bold transition flex items-center justify-center space-x-3 shadow-lg cursor-pointer">
+                    <i class="fa-brands fa-google text-red-500 text-base"></i>
+                    <span>Sign in with Google</span>
+                </button>
+                <div class="text-center">
+                    <span class="text-[10px] bg-amber-500/10 text-amber-400 border border-amber-500/30 px-2.5 py-0.5 rounded-full font-semibold uppercase tracking-wider">Coming Soon</span>
+                </div>
+            </div>
+
+            <div class="pt-4 border-t border-zinc-900 space-y-3 text-xs text-zinc-400">
+                <div class="flex justify-between items-center cursor-pointer hover:text-white transition" onclick="alert('PromptGenZ is the ultimate destination for AI creators to discover, generate, and copy top-tier visual prompts.')">
+                    <span>About Us</span>
+                    <i class="fa-solid fa-chevron-right text-[10px]"></i>
+                </div>
+                <div class="flex justify-between items-center cursor-pointer hover:text-white transition" onclick="alert('Terms & Conditions: All prompts shared on this platform are free to use for personal and commercial AI art projects.')">
+                    <span>Terms & Conditions</span>
+                    <i class="fa-solid fa-chevron-right text-[10px]"></i>
+                </div>
+                <div class="flex justify-between items-center cursor-pointer hover:text-white transition" onclick="alert('Privacy Policy: We completely secure your data and respect your privacy.')">
+                    <span>Privacy Policy</span>
+                    <i class="fa-solid fa-chevron-right text-[10px]"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Navigation Bar -->
+    <nav class="fixed bottom-0 left-0 right-0 bg-zinc-950/90 backdrop-blur-md border-t border-zinc-900 px-8 py-3 flex justify-around items-center z-30 max-w-md mx-auto rounded-t-3xl">
+        <button id="navHomeBtn" onclick="switchTab('home'); updateNavActive(this)" class="nav-item text-white flex flex-col items-center bg-transparent border-none cursor-pointer p-1"><i class="fa-solid fa-house text-base"></i></button>
+        <button id="navNewBtn" onclick="updateNavActive(this)" class="nav-item relative text-zinc-500 hover:text-zinc-300 flex flex-col items-center bg-transparent border-none cursor-pointer p-1">
+            <i class="fa-solid fa-bolt text-base"></i>
+            <span class="absolute -top-2 -right-4 bg-red-600 text-white text-[8px] font-bold px-1 rounded-full uppercase tracking-tighter">NEW</span>
+        </button>
+        <button id="navFavBtn" onclick="switchTab('favorites'); updateNavActive(this)" class="nav-item text-zinc-500 hover:text-zinc-300 flex flex-col items-center bg-transparent border-none cursor-pointer p-1"><i class="fa-solid fa-heart text-base"></i></button>
+        <button id="navProfileBtn" onclick="openProfileModal(); updateNavActive(this)" class="nav-item text-zinc-500 hover:text-zinc-300 flex flex-col items-center bg-transparent border-none cursor-pointer p-1"><i class="fa-solid fa-user text-base"></i></button>
+    </nav>
+
+    <!-- Additional Adsterra Scripts Setup -->
+    <script src="https://pl30976423.profitableratecpmnetwork.com/4b/82/af/4b82af76265bd5fed87008368fbb048e.js"></script>
+    <script src="https://pl30976425.profitableratecpmnetwork.com/1d/2d/87/1d2d87e0fde3e21a799ca501e71d3690.js"></script>
+
+    <!-- Script Logic -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
+        import { getFirestore, collection, getDocs, doc, getDoc, query } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAcyASMFEogpp8BwgJc4hsPGNoIZOb6dKo",
+            authDomain: "promptgenz-daaf3.firebaseapp.com",
+            projectId: "promptgenz-daaf3",
+            storageBucket: "promptgenz-daaf3.firebasestorage.app",
+            messagingSenderId: "751005531769",
+            appId: "1:751005531769:web:20b8330970e001dd691ea8",
+            measurementId: "G-VF4QP1SLSQ"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        let allPosts = [];
+        let currentTab = 'home';
+
+        window.addEventListener('DOMContentLoaded', () => {
+            fetchGalleryData();
+            loadDynamicCategories();
+            loadTopAd();
+        });
+
+        function loadTopAd() {
+            const container = document.getElementById('topAdContainer');
+            if(container) {
+                container.innerHTML = "";
+                const s1 = document.createElement('script');
+                s1.async = true;
+                s1.dataset.cfasync = "false";
+                s1.src = "https://pl30976426.profitableratecpmnetwork.com/9fc8c4f618a6435594dfee7d8598be59/invoke.js";
+                const div = document.createElement('div');
+                div.id = "container-9fc8c4f618a6435594dfee7d8598be59";
+                container.appendChild(s1);
+                container.appendChild(div);
+            }
+        }
+
+        async function loadDynamicCategories() {
+            const container = document.getElementById('categoryPillsContainer');
+            try {
+                const querySnapshot = await getDocs(collection(db, "categories"));
+                querySnapshot.forEach((docSnap) => {
+                    const catName = docSnap.data().name;
+                    if (catName && catName !== 'All') {
+                        const btn = document.createElement('button');
+                        btn.onclick = () => filterCategory(catName);
+                        btn.className = "category-pill bg-zinc-900 border border-zinc-800 text-zinc-300 px-4 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition cursor-pointer flex items-center space-x-1.5";
+                        btn.innerHTML = `<i class="fa-solid fa-tag text-xs"></i><span>${catName}</span>`;
+                        container.appendChild(btn);
+                    }
+                });
+            } catch (err) {
+                console.error("Error loading categories:", err);
+            }
+        }
+
+        async function fetchGalleryData() {
+            const galleryGrid = document.getElementById('galleryGrid');
+            galleryGrid.innerHTML = '<div class="col-span-2 text-center py-10 text-xs text-zinc-500"><i class="fa-solid fa-spinner animate-spin mr-1"></i> Loading all prompts...</div>';
+
+            try {
+                const q = query(collection(db, "prompts"));
+                const querySnapshot = await getDocs(q);
+                allPosts = [];
+                querySnapshot.forEach((docSnap) => {
+                    allPosts.push({ id: docSnap.id, ...docSnap.data() });
+                });
+                
+                if(allPosts.length === 0) {
+                    galleryGrid.innerHTML = '<div class="col-span-2 text-center py-10 text-xs text-zinc-400">No prompts found in Firebase database.</div>';
+                    return;
+                }
+
+                renderFeaturedCarousel(allPosts);
+                renderTrendingSection(allPosts);
+                renderGallery(allPosts);
+            } catch (error) {
+                console.error("Firebase Error:", error);
+                galleryGrid.innerHTML = `<div class="col-span-2 text-center py-10 text-xs text-red-400 px-4">Error loading data: ${error.message}</div>`;
+            }
+        }
+
+        window.switchTab = function(tab) {
+            currentTab = tab;
+            const trendingSec = document.querySelector('section.mb-6:has(#trendingGrid)');
+            const catContainer = document.getElementById('categoryPillsContainer');
+            const galleryHeading = document.getElementById('galleryHeading');
+
+            if (tab === 'favorites') {
+                if (trendingSec) trendingSec.style.display = 'none';
+                if (catContainer) catContainer.style.display = 'none';
+                galleryHeading.textContent = "My Saved Favorites";
+                renderFavorites();
+            } else {
+                if (trendingSec) trendingSec.style.display = 'block';
+                if (catContainer) catContainer.style.display = 'flex';
+                galleryHeading.textContent = "Gallery";
+                renderGallery(allPosts);
+            }
+        }
+
+        window.updateNavActive = function(element) {
+            document.querySelectorAll('.nav-item').forEach(btn => {
+                btn.classList.remove('text-white');
+                btn.classList.add('text-zinc-500');
+            });
+            element.classList.remove('text-zinc-500');
+            element.classList.add('text-white');
+        }
+
+        window.handleGoogleLogin = async function() {
+            const provider = new GoogleAuthProvider();
+            try {
+                const result = await signInWithPopup(auth, provider);
+                const user = result.user;
+                document.getElementById('userNameDisplay').textContent = user.displayName;
+                
+                const userDocRef = doc(db, "users", user.email);
+                const userSnap = await getDoc(userDocRef);
+
+                if (userSnap.exists() && userSnap.data().isPremium === true) {
+                    document.getElementById('userStatusDisplay').textContent = "VIP Premium Member";
+                    document.getElementById('premiumBadgeBox').classList.remove('hidden');
+                    alert("Welcome back, VIP Premium User!");
+                } else {
+                    document.getElementById('userStatusDisplay').textContent = "Standard Free Account";
+                    alert("Logged in successfully!");
+                }
+            } catch (error) {
+                console.error("Login Error:", error);
+                alert("Google Sign-In configuration check required.");
+            }
+        }
+
+        function getThumbnail(post) {
+            if (post.imagePromptPairs && post.imagePromptPairs.length > 0) {
+                return post.imagePromptPairs[0].imageUrl || "";
+            }
+            if (post.imageUrls && post.imageUrls.length > 0) {
+                return post.imageUrls[0];
+            }
+            return post.imageUrl || "";
+        }
+
+        function renderFeaturedCarousel(posts) {
+            const container = document.getElementById('featuredCarousel');
+            container.innerHTML = "";
+            if (posts.length === 0) return;
+
+            posts.slice(0, 5).forEach((post, index) => {
+                let thumb = getThumbnail(post);
+                let badgeText = index % 2 === 0 ? "★ FEATURED" : "LIMITED TIME";
+
+                const card = document.createElement('div');
+                card.className = "flex-shrink-0 w-[280px] sm:w-[320px] h-[380px] rounded-[28px] overflow-hidden relative shadow-xl snap-start cursor-pointer group bg-zinc-900 border border-zinc-800";
+                card.innerHTML = `
+                    <img src="${thumb}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                    <div class="absolute inset-0 bg-gradient-to-t from-zinc-950/90 via-transparent to-transparent flex flex-col justify-between p-5">
+                        <div>
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-semibold tracking-wider bg-zinc-900/80 text-white border border-zinc-800 backdrop-blur-md">
+                                ${badgeText}
+                            </span>
+                        </div>
+                        <div class="space-y-1">
+                            <h3 class="text-base font-bold text-white leading-snug drop-shadow">${post.title || "Untitled"}</h3>
+                            <p class="text-xs text-zinc-300 font-medium">${post.category || "General"}</p>
+                        </div>
+                    </div>
+                `;
+                card.addEventListener('click', () => openDetailModal(post));
+                container.appendChild(card);
+            });
+        }
+
+        function renderTrendingSection(posts) {
+            const container = document.getElementById('trendingGrid');
+            container.innerHTML = "";
+            if (posts.length === 0) return;
+
+            posts.slice(0, 10).forEach((post, index) => {
+                let thumb = getThumbnail(post);
+                const card = document.createElement('div');
+                card.className = "flex-shrink-0 w-32 bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden shadow-lg relative group cursor-pointer flex flex-col";
+                card.innerHTML = `
+                    <div class="relative w-full h-40 bg-zinc-950 overflow-hidden">
+                        <img src="${thumb}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
+                        <span class="absolute top-2 left-2 bg-black/70 backdrop-blur-md text-white text-[10px] font-bold px-2 py-0.5 rounded-lg border border-white/10">
+                            #${index + 1}
+                        </span>
+                    </div>
+                    <div class="p-2.5 flex flex-col justify-between flex-1">
+                        <h3 class="text-[11px] font-semibold text-white truncate">${post.title || "Untitled"}</h3>
+                        <p class="text-[9px] text-zinc-400 mt-0.5 truncate">${post.category || "General"}</p>
+                    </div>
+                `;
+                card.addEventListener('click', () => openDetailModal(post));
+                container.appendChild(card);
+            });
+        }
+
+        window.filterCategory = function(cat) {
+            document.querySelectorAll('.category-pill').forEach(btn => {
+                if(btn.textContent.trim().toLowerCase() === cat.toLowerCase()) {
+                    btn.className = "category-pill active bg-white text-zinc-950 px-4 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition cursor-pointer flex items-center space-x-1.5 shadow-sm";
+                } else {
+                    btn.className = "category-pill bg-zinc-900 border border-zinc-800 text-zinc-300 px-4 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition cursor-pointer flex items-center space-x-1.5";
+                }
+            });
+
+            if (cat === 'All') {
+                renderGallery(allPosts);
+            } else {
+                const filtered = allPosts.filter(p => p.category && p.category.toLowerCase() === cat.toLowerCase());
+                renderGallery(filtered);
+            }
+        }
+
+        function renderGallery(posts) {
+            const galleryGrid = document.getElementById('galleryGrid');
+            galleryGrid.innerHTML = "";
+
+            if (posts.length === 0) {
+                galleryGrid.innerHTML = '<div class="col-span-2 text-center py-10 text-xs text-zinc-500">No prompts found matching your criteria.</div>';
+                return;
+            }
+
+            posts.forEach((post, index) => {
+                let thumb = getThumbnail(post);
+                const card = document.createElement('div');
+                card.className = "bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden shadow-lg relative group cursor-pointer flex flex-col";
+                card.innerHTML = `
+                    <div class="relative w-full h-56 bg-zinc-950 overflow-hidden">
+                        <img src="${thumb}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
+                    </div>
+                    <div class="p-3 flex flex-col justify-between flex-1">
+                        <h3 class="text-xs font-semibold text-white truncate">${post.title || "Untitled"}</h3>
+                        <p class="text-[10px] text-zinc-400 mt-1">${post.category || "General"}</p>
+                    </div>
+                `;
+                card.addEventListener('click', () => openDetailModal(post));
+                galleryGrid.appendChild(card);
+
+                const itemNumber = index + 1;
+
+                if (itemNumber % 6 === 0) {
+                    const bannerAdWrapper = document.createElement('div');
+                    bannerAdWrapper.className = "col-span-2 my-2 flex flex-col items-center justify-center bg-zinc-900/40 border border-zinc-800/60 rounded-2xl p-2 min-h-[100px]";
+                    bannerAdWrapper.innerHTML = `
+                        <span class="text-[9px] text-zinc-600 uppercase tracking-widest mb-1">Advertisement</span>
+                        <div class="flex justify-center w-full overflow-hidden" id="dyn-banner-${itemNumber}"></div>
+                    `;
+                    galleryGrid.appendChild(bannerAdWrapper);
+
+                    const adCont = document.getElementById(`dyn-banner-${itemNumber}`);
+                    if(adCont) {
+                        const s1 = document.createElement('script');
+                        s1.text = "atOptions = { 'key' : '092942eba4d9ef9e4e965e92c257f172', 'format' : 'iframe', 'height' : 250, 'width' : 300, 'params' : {} };";
+                        const s2 = document.createElement('script');
+                        s2.src = "https://www.highrevenueformat.com/092942eba4d9ef9e4e965e92c257f172/invoke.js";
+                        adCont.appendChild(s1);
+                        adCont.appendChild(s2);
+                    }
+                }
+
+                if (itemNumber % 10 === 0) {
+                    const nativeAdWrapper = document.createElement('div');
+                    nativeAdWrapper.className = "col-span-2 my-2 flex flex-col items-center justify-center bg-zinc-900/40 border border-zinc-800/60 rounded-2xl p-2 min-h-[70px]";
+                    nativeAdWrapper.innerHTML = `
+                        <span class="text-[9px] text-zinc-600 uppercase tracking-widest mb-1">Sponsored</span>
+                        <div class="flex justify-center w-full overflow-hidden" id="dyn-native-${itemNumber}"></div>
+                    `;
+                    galleryGrid.appendChild(nativeAdWrapper);
+
+                    const nativeCont = document.getElementById(`dyn-native-${itemNumber}`);
+                    if(nativeCont) {
+                        const s1 = document.createElement('script');
+                        s1.text = "atOptions = { 'key' : '50134dfc37c0f32e812e835c8fb5f17f', 'format' : 'iframe', 'height' : 50, 'width' : 320, 'params' : {} };";
+                        const s2 = document.createElement('script');
+                        s2.src = "https://www.highrevenueformat.com/50134dfc37c0f32e812e835c8fb5f17f/invoke.js";
+                        nativeCont.appendChild(s1);
+                        nativeCont.appendChild(s2);
+                    }
+                }
+            });
+        }
+
+        function renderFavorites() {
+            const galleryGrid = document.getElementById('galleryGrid');
+            galleryGrid.innerHTML = "";
+            
+            let savedFavs = JSON.parse(localStorage.getItem('promptgenz_favorites') || '[]');
+            if (savedFavs.length === 0) {
+                galleryGrid.innerHTML = '<div class="col-span-2 text-center py-10 text-xs text-zinc-500">No saved favorites yet. Tap the heart icon in any prompt to save it!</div>';
+                return;
+            }
+
+            savedFavs.forEach((post) => {
+                let thumb = getThumbnail(post);
+                const card = document.createElement('div');
+                card.className = "bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden shadow-lg relative group cursor-pointer flex flex-col";
+                card.innerHTML = `
+                    <div class="relative w-full h-56 bg-zinc-950 overflow-hidden">
+                        <img src="${thumb}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
+                    </div>
+                    <div class="p-3 flex flex-col justify-between flex-1">
+                        <h3 class="text-xs font-semibold text-white truncate">${post.title || "Untitled"}</h3>
+                        <p class="text-[10px] text-zinc-400 mt-1">${post.category || "General"}</p>
+                    </div>
+                `;
+                card.addEventListener('click', () => openDetailModal(post));
+                galleryGrid.appendChild(card);
+            });
+        }
+
+        window.openDetailModal = function(post) {
+            const modal = document.getElementById('detailModal');
+            const modalBody = document.getElementById('modalBody');
+
+            let pairs = post.imagePromptPairs || [];
+            if (pairs.length === 0 && post.imageUrls) {
+                pairs = post.imageUrls.map(url => ({ imageUrl: url, prompt: post.promptText || post.prompt || "Detailed visual prompt" }));
+            }
+            if (pairs.length === 0 && post.imageUrl) {
+                pairs = [{ imageUrl: post.imageUrl, prompt: post.promptText || post.prompt || "Detailed visual prompt" }];
+            }
+
+            let currentMainImage = pairs[0]?.imageUrl || "";
+            let currentPromptText = pairs[0]?.prompt || "Detailed visual prompt";
+
+            let horizontalAnglesHtml = "";
+            if (pairs.length > 1) {
+                pairs.forEach((pair, idx) => {
+                    let isFirst = idx === 0;
+                    let safePrompt = (pair.prompt || "").replace(/["`]/g, "'");
+                    horizontalAnglesHtml += `
+                        <div onclick="updateModalMainImage('${pair.imageUrl}', \`${safePrompt}\`, this)" class="angle-thumb flex-shrink-0 w-20 h-20 rounded-xl overflow-hidden border-2 ${isFirst ? 'border-white' : 'border-zinc-800'} cursor-pointer transition hover:opacity-80">
+                            <img src="${pair.imageUrl}" class="w-full h-full object-cover">
+                        </div>
+                    `;
+                });
+            }
+
+            let savedFavs = JSON.parse(localStorage.getItem('promptgenz_favorites') || '[]');
+            let isFav = savedFavs.some(p => p.id === post.id);
+
+            modalBody.innerHTML = `
+                <div class="w-full h-[380px] bg-zinc-900 rounded-[24px] overflow-hidden border border-zinc-800 shadow-xl relative flex items-center justify-center p-2">
+                    <img id="activeModalImage" src="${currentMainImage}" class="w-full h-full object-contain">
+                </div>
+
+                <div id="anglesSection" class="space-y-1.5 ${pairs.length > 1 ? '' : 'hidden'}">
+                    <span class="text-[10px] text-zinc-400 font-semibold uppercase tracking-wider">Select Angle</span>
+                    <div id="anglesContainer" class="flex space-x-2 overflow-x-auto pb-1 scrollbar-none">
+                        ${horizontalAnglesHtml}
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-between">
+                    <h2 class="text-lg font-bold text-white leading-snug">${post.title || "Untitled"}</h2>
+                    <button id="modalFavBtn" class="w-10 h-10 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center text-sm cursor-pointer hover:border-amber-400 transition">
+                        <i class="fa-${isFav ? 'solid' : 'regular'} fa-heart ${isFav ? 'text-red-500' : 'text-zinc-400'}"></i>
+                    </button>
+                </div>
+
+                <div class="flex space-x-3">
+                    <button id="copyPromptBtn" class="flex-1 bg-white hover:bg-zinc-200 text-zinc-950 py-3.5 rounded-2xl text-sm font-bold transition flex items-center justify-center space-x-2 shadow-lg cursor-pointer">
+                        <i class="fa-regular fa-copy"></i>
+                        <span>Copy Prompt</span>
+                    </button>
+                    <button id="sharePromptBtn" class="w-14 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-white rounded-2xl flex items-center justify-center transition cursor-pointer shadow-lg">
+                        <i class="fa-solid fa-share-nodes text-sm"></i>
+                    </button>
+                </div>
+            `;
+
+            document.getElementById('modalFavBtn').onclick = function() {
+                let favs = JSON.parse(localStorage.getItem('promptgenz_favorites') || '[]');
+                let index = favs.findIndex(p => p.id === post.id);
+                const icon = this.querySelector('i');
+                
+                if (index > -1) {
+                    favs.splice(index, 1);
+                    icon.className = "fa-regular fa-heart text-zinc-400";
+                    alert('Removed from favorites');
+                } else {
+                    favs.push(post);
+                    icon.className = "fa-solid fa-heart text-red-500";
+                    alert('Saved to favorites successfully!');
+                }
+                localStorage.setItem('promptgenz_favorites', JSON.stringify(favs));
+                if (currentTab === 'favorites') renderFavorites();
+            };
+
+            document.getElementById('copyPromptBtn').onclick = function() {
+                navigator.clipboard.writeText(currentPromptText);
+                alert('Prompt copied successfully!');
+            };
+
+            document.getElementById('sharePromptBtn').onclick = function() {
+                if (navigator.share) {
+                    navigator.share({
+                        title: post.title || 'PromptGenZ Prompt',
+                        text: currentPromptText,
+                        url: window.location.href
+                    }).catch(() => {});
+                } else {
+                    navigator.clipboard.writeText(window.location.href);
+                    alert('Link copied to clipboard for sharing!');
+                }
+            };
+
+            modal.classList.remove('hidden');
+        }
+
+        window.updateModalMainImage = function(imageUrl, promptText, element) {
+            document.getElementById('activeModalImage').src = imageUrl;
+            
+            document.querySelectorAll('.angle-thumb').forEach(thumb => {
+                thumb.classList.remove('border-white');
+                thumb.classList.add('border-zinc-800');
+            });
+            element.classList.remove('border-zinc-800');
+            element.classList.add('border-white');
+
+            const copyBtn = document.getElementById('copyPromptBtn');
+            copyBtn.onclick = function() {
+                navigator.clipboard.writeText(promptText);
+                alert('Prompt copied successfully!');
+            };
+        }
+
+        window.openProfileModal = function() {
+            document.getElementById('profileModal').classList.remove('hidden');
+        }
+
+        window.closeProfileModal = function() {
+            document.getElementById('profileModal').classList.add('hidden');
+        }
+
+        document.getElementById('closeModalBtn').addEventListener('click', () => {
+            document.getElementById('detailModal').classList.add('hidden');
+        });
+
+        document.getElementById('detailModal').addEventListener('click', (e) => {
+            if (e.target.id === 'detailModal') {
+                document.getElementById('detailModal').classList.add('hidden');
+            }
+        });
+
+        document.getElementById('profileModal').addEventListener('click', (e) => {
+            if (e.target.id === 'profileModal') {
+                document.getElementById('profileModal').classList.add('hidden');
+            }
+        });
+
+        document.getElementById('searchInput').addEventListener('input', function(e) {
+            const term = e.target.value.toLowerCase();
+            const filtered = allPosts.filter(p => 
+                (p.title && p.title.toLowerCase().includes(term)) || 
+                (p.category && p.category.toLowerCase().includes(term))
+            );
+            renderGallery(filtered);
+        });
+    </script>
+</body>
+</html>
