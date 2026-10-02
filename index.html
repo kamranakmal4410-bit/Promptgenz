@@ -177,12 +177,6 @@
             });  
 
             allPosts.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
-
-            allPosts = [];  
-            querySnapshot.forEach((docSnap) => {  
-                let data = docSnap.data();  
-                allPosts.push({ id: docSnap.id, ...data });  
-            });  
               
             renderCategoryPills(allPosts);  
             renderFeaturedCarousel(allPosts);  
