@@ -695,7 +695,7 @@
 
                     await addDoc(collection(db, "prompts"), newPost);
 
-                } else {
+                          } else {
                     // Video Mode
                     const videoFile = document.getElementById('videoFile').files[0];
                     const videoPrompt = document.getElementById('videoPromptText').value.trim();
@@ -707,11 +707,24 @@
                         return;
                     }
 
-                    // Upload Video to Firebase Storage
+                    // Step 1: Uploading to Storage
+                    submitBtn.innerHTML = '<i class="fa-solid fa-spinner animate-spin mr-1"></i><span>Uploading Video (Please wait)...</span>';
+
                     const videoRef = ref(storage, 'videos/' + Date.now() + '_' + videoFile.name);
-                    const snapshot = await uploadBytes(videoRef, videoFile);
+                    let snapshot;
+                    try {
+                        snapshot = await uploadBytes(videoRef, videoFile);
+                    } catch (storageErr) {
+                        console.error("Storage Upload Error:", storageErr);
+                        throw new Error("Storage Upload Failed: " + storageErr.message);
+                    }
+
+                    // Step 2: Getting URL
+                    submitBtn.innerHTML = '<i class="fa-solid fa-spinner animate-spin mr-1"></i><span>Getting Download URL...</span>';
                     const videoUrl = await getDownloadURL(snapshot.ref);
 
+                    // Step 3: Saving to Firestore Database
+                    submitBtn.innerHTML = '<i class="fa-solid fa-spinner animate-spin mr-1"></i><span>Saving to Cloud Database...</span>';
                     const newVideoPost = {
                         title: title,
                         category: category || "Video",
@@ -722,6 +735,7 @@
 
                     await addDoc(collection(db, "prompts"), newVideoPost);
                 }
+                
 
                 const alertBox = document.getElementById('successAlert');
                 alertBox.classList.remove('hidden');
